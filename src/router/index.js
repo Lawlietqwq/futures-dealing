@@ -23,22 +23,8 @@ export const constantRoutes = [
     //   component: () => import('@/views/login/index'),
     //   hidden: true
     // },
-    {
-      path: '/register',
-      component: () => import('@/views/register/index'),
-      hidden: true
-    }, 
-    {
-      path: '/forgetPass',
-      component: () => import('@/views/forgetPass/index'),
-      hidden: true
-    },
     
-    {
-      path: '/auth-redirect',
-      component: () => import('@/views/login/auth-redirect'),
-      hidden: true
-    },
+
     {
       path: '/404',
       component: () => import('@/views/error-page/404'),
@@ -49,19 +35,44 @@ export const constantRoutes = [
       component: () => import('@/views/error-page/401'),
       hidden: true
     },
+    // {
+    //   path: '/',
+    //   component: Layout,
+    //   children: [
+    //     {
+    //       path: '',
+    //       component: () => import('@/views/strategyView/index'),
+    //       name: 'strategyView',
+    //       meta: { title: '策略列表', icon: 'lock', noCache: true }
+    //     }
+    //   ]
+    // },
     {
       path: '/',
       component: Layout,
       children: [
         {
           path: '',
-          component: () => import('@/views/case/index'),
-          name: 'index',
-          meta: { title: '期货交易系统', icon: 'lock', noCache: true }
+          component: () => import('@/views/strategyView/index'),
+          name: 'strategyView',
+          meta: { title: '策略列表', icon: 'lock', noCache: true }
         }
       ]
     },
-  
+    {
+      path: '/model',
+      component: Layout,
+      hidden: true,
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/modelView/index'),
+          meta: { title: '模型列表', icon: 'lock', noCache: true }
+        }
+      ]
+    },
+    { path: '*', redirect: '/404', hidden: true }
+
   ]
   
   /**
@@ -71,17 +82,17 @@ export const constantRoutes = [
   export const asyncRoutes = [
   
   
-    {
-      path: '/caseView',
-      component: () => import('@/views/caseView/index'),
-      name: 'caseView',
-    },
+    // {
+    //   path: '/caseView',
+    //   component: () => import('@/views/caseView/index'),
+    //   name: 'caseView',
+    // },
   
-    {
-      path: '/caseDetail',
-      component: () => import('@/views/caseDetail/index'),
-      name: 'caseDetail',
-    },
+    // {
+    //   path: '/caseDetail',
+    //   component: () => import('@/views/caseDetail/index'),
+    //   name: 'caseDetail',
+    // },
   
     // {
     //   path: '/icon',

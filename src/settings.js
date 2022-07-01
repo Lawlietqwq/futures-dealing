@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'OpenDog',
+  title: '期货交易系统',
 
   /**
    * @type {boolean} true | false

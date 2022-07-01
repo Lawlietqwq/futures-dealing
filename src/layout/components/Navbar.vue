@@ -31,10 +31,10 @@
           <!-- <router-link to="/">
             <el-dropdown-item>Dashboard</el-dropdown-item>
           </router-link> -->
-          <a target="_blank" href="https://github.com/SheepHuan/OpenDog">
-            <el-dropdown-item>Github</el-dropdown-item>
+          <a target="_blank" href="http://121.89.234.19:1080/futures_trading_system_grp/futures_trading_sys/-/tree/dev">
+            <el-dropdown-item>Gitlab</el-dropdown-item>
           </a>
-          <a target="_blank" href="https://github.com/SheepHuan/OpenDog/wiki">
+          <a target="_blank" href="http://121.89.234.19:1080/futures_trading_system_grp/futures_trading_sys/-/wikis/home">
             <el-dropdown-item>Wiki</el-dropdown-item>
           </a>
           <el-dropdown-item divided @click.native="logout">

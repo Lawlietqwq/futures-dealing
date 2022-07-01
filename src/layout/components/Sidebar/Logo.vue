@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      title: 'OpenDog',
+      title: '期货交易系统',
       logo: 'dog'
     }
   }

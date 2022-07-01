@@ -3,12 +3,12 @@ import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-import { getToken } from '@/utils/auth' // get token from cookie
+// import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
-const whiteList = ['/login', '/auth-redirect', '/register', '/forgetPass'] // no redirect whitelist
+const whiteList = ['/login','/case','/'] // no redirect whitelist
 
 //导航守卫，路由拦截器
 router.beforeEach(async(to, from, next) => {
@@ -19,7 +19,8 @@ router.beforeEach(async(to, from, next) => {
   document.title = getPageTitle(to.meta.title)
 
   // determine whether the user has logged in
-  const hasToken = store.getters.token
+  // const hasToken = store.getters.token
+  const hasToken = null;
 
   if (hasToken) {
     if (to.path === '/login') {
