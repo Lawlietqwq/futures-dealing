@@ -1,32 +1,32 @@
-import request from '@/utils/request'
+import httpRequest from '@/utils/request'
 import store from '@/store'
 
-export function login(data){
-    return request({
+export async function login(data){
+    return await httpRequest({
         url:'',
         method:'post',
         data
     })
 }
 
-export function logout(data){
-    return request({
+export async function logout(data){
+    return await httpRequest({
         url:'',
         method:'post',
         data
     })
 }
 
-export function register(data){
-    return request({
+export async function register(data){
+    return await httpRequest({
         url:'',
         method:'post',
         data
     })
 }
 
-export function getUserInfo(data){
-    return request({
+export async function getUserInfo(data){
+    return await httpRequest({
         url:'',
         method:'get',
         data

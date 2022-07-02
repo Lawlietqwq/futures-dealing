@@ -1,17 +1,12 @@
-import request from '@/utils/request'
+import httpRequest from '@/utils/request'
 
-export function getAllStrategy(){
-    return request({
-        url:'/strategy',
-        method:'get',
-    })
+export async function getAllStrategy(){
+    return await httpRequest.get('/strategy', null)
 }
 
-export function getStrategyById(strategyId){
-    return request({
-        url:`/strategy/${strategyId}`,
-        method:'get',
-    })
+
+export async function getStrategyById(strategyId){
+    return await httpRequest.get(`/strategy/${strategyId}`, null)
 }
 
 

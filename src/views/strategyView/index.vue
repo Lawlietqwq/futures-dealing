@@ -7,7 +7,7 @@
           <strategy-list @selectStrategy="selectStrategy" />
         </div>
       </el-col>
-      <el-col :xs="24" :sm="24" :lg="8">
+      <el-col v-show="componentVisible" :xs="24" :sm="24" :lg="8">
         <div class="div-wrapper">
           <strategy-info :strategy ="strategy"/>
         </div>
@@ -20,21 +20,21 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getStrategyById } from '@/api/strategy'
-import StrategyList from 'components/StrategyList.vue'
-import StrategyInfo from 'components/StrategyInfo.vue'
+import strategyList from './components/StrategyList.vue'
+import strategyInfo from './components/StrategyInfo.vue'
 
 export default {
   name: 'StrategyView',
 
   components:{
-    StrategyList,
-    StrategyInfo
+    strategyList,
+    strategyInfo
   },
 
   data(){
     return{
-      listLoading: true,
-      strategy: [],
+      strategy: null,
+      componentVisible: false,
     }
   },
 
@@ -46,11 +46,10 @@ export default {
 
   methods: {
     selectStrategy(strategyId){
-      this.loading = true
         getStrategyById(strategyId).then(res=>{
-          if(!res.data){
-            this.loading = false
-            return res.data
+          if(res.data){
+            this.strategy = res.data
+            this.componentVisible = true
           }
         })
     }

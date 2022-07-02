@@ -1,43 +1,26 @@
-import request from '@/utils/request'
+import httpRequest from '@/utils/request'
 
-export function getAllModel(){
-    return request({
-        url:'/model',
-        method:'get',
-    })
+export async function getAllModel(){
+    return await httpRequest.get('/model', null)
 }
 
 
-export function getModelById(modelId){
-    return request({
-        url:`/model/${modelId}`,
-        method:'get',
-    })
+export async function getModelById(modelId){
+    return await httpRequest.get(`/model/${modelId}`, null)
 }
 
 
-export function createModel(data){
-    return request({
-        url:'/model',
-        method:'post',
-        data
-    })
+export async function createModel(data){
+    return await httpRequest.post('/model', data)
 }
 
 
-export function updateModel(data){
+export async function updateModel(data){
     const modelId = data.modelId
-    return request({
-        url:`/model/${modelId}`,
-        method:'put',
-        data
-    })
+    return await httpRequest.put(`/model/${modelId}`, data)
 }
 
 
-export function deleteModel(modelId){
-    return request({
-        url:`/model/${modelId}`,
-        method:'delete',
-    })
+export async function deleteModel(modelId){
+    return await httpRequest.delete(`/model/${modelId}`, null)
 }

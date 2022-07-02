@@ -32,14 +32,15 @@ export default {
     }
   },
   created(){
-    allStrategy = this.getStrategyList()
+    this.allStrategy = this.getStrategyList()
+    console.log(this.allStrategy)
   },
   methods: {
     getStrategyList(){
-      this.loading = true
+      console.log('woai')
       getAllStrategy().then(res=>{
-        if(!res.data){
-          this.loading = false
+        console.log(res.data,'asdasd')
+        if(res.data){
           return res.data
         }
       })

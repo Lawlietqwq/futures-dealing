@@ -2,6 +2,7 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
@@ -9,7 +10,7 @@ const service = axios.create({
   // withCredentials: true, // send cookies when cross-domain requests
   // withCredentials: true,
   timeout: 0, // request timeout
-  crossDomain: true,
+  // crossDomain: true,
 })
 
 // request interceptor
@@ -23,22 +24,17 @@ service.interceptors.request.use(
 
     // }
     //   config.headers['C'] = getToken()    
-    config.headers = {
-      // 'token': store.getters.token,    
-      // 'uid': store.getters.uid,
-      'Content-Type': 'application/json',
-    }
+    // config.headers = {
+    //   // 'token': store.getters.token,    
+    //   // 'uid': store.getters.uid,
+    //   'Content-Type': 'application/json',
+    // }
     // if(store.getters.token)
     // config.headers['token']=store.getters.token
     // if(store.getters.uid>=0)
     // config.headers['uid']=store.getters.uid
     // return config
-    return {
-      method:config.method,
-      url:config.url,
-      headers:config.headers,
-      data:config.data
-    }
+    return config
   },
   error => {
     // do something with request error
@@ -65,7 +61,7 @@ service.interceptors.response.use(
     // 状态码不是200，报错
     if (res.code !== 200) {
       Message({
-        message: res.message || '错误',
+        message: res.message || '操作错误',
         type: 'error',
         duration: 5 * 1000
       })
@@ -88,8 +84,9 @@ service.interceptors.response.use(
           })
         })
       }
-      return Promise.reject(new Error(res.message || '错误'))
+      return Promise.reject(new Error(res.message || '操作错误'))
     } else {
+      console.log(res)
       return res
     }
   },
@@ -101,8 +98,106 @@ service.interceptors.response.use(
       duration: 5 * 1000
     })
     return Promise.reject(error)
-  return res
   }
 )
 
-export default service
+const httpRequest = {
+  // post请求提交
+  post(url, params) {
+    return service.post(url, params, {
+      transformRequest : [(params) => {
+        return JSON.stringify(params)
+      }],
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+  // put请求提交
+  put(url, params) {
+    return service.put(url, params, {
+      transformRequest : [(params) => {
+        return JSON.stringify(params)
+      }],
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+  //get请求
+  get(url, params) {
+    return service.get(url, {
+      params,
+      paramsSerializer: (params) => {
+        return qs.stringify(params)
+      }
+    })
+  },
+  // RESTful的get请求
+  getRestApi(url, params) {
+    let _params
+    if (Object.is(params, undefined || null)) {
+      _params = ''
+    } else {
+      _params = '/'
+      for (const key in params) {
+        if (params.hasOwnProperty(key) && params[key] !== null && params[key] !== '') {
+          _params += `${params[key]}/`
+        }
+      }
+      _params = _params.substr(0, _params.length - 1)
+    }
+    if (_params) {
+      return service.get(`${url}${_params}`)
+    } else {
+      return service.get(url)
+    }
+  },
+
+  //删除请求
+  delete(url, params) {
+    let _params
+    if (Object.is(params, undefined || null)) {
+      _params = ''
+    } else {
+      _params = '/'
+      for (const key in params) {
+        if (params.hasOwnProperty(key) && params[key] !== null && params[key] !== '') {
+          _params += `${params[key]}/`
+        }
+      }
+      _params = _params.substr(0, _params.length - 1)
+    }
+    if (_params) {
+      return service.delete(`${url}${_params}`).catch(e => {
+        message.error(e.msg)
+        return Promise.reject(e)
+      })
+    } else {
+      return service.delete(url).catch(e => {
+        message.error(e.msg)
+        return Promise.reject(e)
+      })
+    }
+  },
+  // 文件上传请求
+  upload(url, params) {
+    return service.post(url, params, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+  //登录请求
+  login(url, params) {
+    return service.post(url, params, {
+      transformRequest: [(params) => {
+        return qs.stringify(params)
+      }],
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+  }
+}
+export default httpRequest
