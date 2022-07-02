@@ -6,11 +6,9 @@ import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
-  // withCredentials: true,
-  timeout: 0, // request timeout
-  // crossDomain: true,
+  // baseURL: process.env.VUE_APP_BASE_API, 
+  baseURL: 'http://127.0.0.1:8888' , 
+  timeout: 0, 
 })
 
 // request interceptor
@@ -56,8 +54,10 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
+    console.log(response, 'erearer')
     // var response = JSON.parse(response)
-    const res = JSON.parse(response.data)
+    const res = response.data
+    console.log(res,'asdasds')
     // 状态码不是200，报错
     if (res.code !== 200) {
       Message({
@@ -126,6 +126,7 @@ const httpRequest = {
   },
   //get请求
   get(url, params) {
+    console.log(url)
     return service.get(url, {
       params,
       paramsSerializer: (params) => {

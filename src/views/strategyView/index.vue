@@ -1,13 +1,13 @@
 <template>
   <div class="strategyView-container">
     
-    <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
+    <el-row :gutter="32" justify="space-around">
+      <el-col :span="8">
         <div class="div-wrapper">
           <strategy-list @selectStrategy="selectStrategy" />
         </div>
       </el-col>
-      <el-col v-show="componentVisible" :xs="24" :sm="24" :lg="8">
+      <el-col v-show="componentVisible" :span="16">
         <div class="div-wrapper">
           <strategy-info :strategy ="strategy"/>
         </div>
@@ -50,6 +50,7 @@ export default {
           if(res.data){
             this.strategy = res.data
             this.componentVisible = true
+            console.log(this.strategy,'strategy')
           }
         })
     }

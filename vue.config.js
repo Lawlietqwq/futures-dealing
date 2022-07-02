@@ -13,7 +13,7 @@ const name = defaultSettings.title // page title
 // For example, Mac: sudo npm run
 // You can change the port by the following method:
 // port = 8888 npm run dev OR npm run dev --port = 8888
-const port = process.env.port || process.env.npm_config_port || 8081
+const port = process.env.port || process.env.npm_config_port || 8080
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
@@ -37,15 +37,14 @@ module.exports = {
       errors: true
     },
     proxy: {
-      [process.env.VUE_APP_BASE_API]: {
-        target: process.env.VUE_APP_BASE_API,
+      '/api': {
+        target: process.env.VUE_APP_BASE_API+'/api',
         changeOrigin: true,  //配置跨域
         pathRewrite: {
-          '^/': ''
+          '^/api': ''
         }
       }
     }  
-    //before: require('./mock/mock-server.js')
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

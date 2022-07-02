@@ -1,18 +1,26 @@
 <template>
   <el-table
     :data="allStrategy"
+    :header-cell-style="{textAlign: 'center'}"
+    :cell-style="{textAlign: 'center'}"
     style="width: 100%"
-    @row-click="selectStrategy">
+    @row-click="selectStrategy"
+    >
     <el-table-column
       v-if="false"
       prop="strategyId"
       label="策略Id"
-      min-width="1">
+      width="0">
     </el-table-column>
     <el-table-column
       prop="strategyName"
-      label="策略名"
-      width="100%">
+      label="策略名">
+    </el-table-column>
+    <el-table-column
+      v-if="false"
+      prop="remark"
+      label="策略简介"
+      width="0">
     </el-table-column>
   </el-table>
 </template>
@@ -32,16 +40,16 @@ export default {
     }
   },
   created(){
-    this.allStrategy = this.getStrategyList()
-    console.log(this.allStrategy)
+    this.getStrategyList()
+    setTimeout(() => {
+    }, 5000);
+    
   },
   methods: {
     getStrategyList(){
-      console.log('woai')
       getAllStrategy().then(res=>{
-        console.log(res.data,'asdasd')
         if(res.data){
-          return res.data
+          this.allStrategy = res.data
         }
       })
     },

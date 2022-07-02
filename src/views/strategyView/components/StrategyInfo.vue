@@ -7,7 +7,7 @@
         </el-button>
       </el-col>
       <el-col>
-        <el-descriptions :title="strategy.strategyName" :column="1" :key="timeStamp" border>
+        <el-descriptions :title="strategy.strategyName" :column="1" :key="timeStamp" class="strategy-description" border>
           <el-descriptions-item v-for="item in strategy.paramNameList" :label="item.paramName" :key="item.paramName">{{item.paramDescription}}</el-descriptions-item>
           <el-descriptions-item label="策略描述">
             {{strategy.remark}}
@@ -21,7 +21,7 @@
           <el-input v-model="model.modelName" />
         </el-form-item>
         <!-- 选择合约 -->
-        <el-form-item>
+        <el-form-item label="选择合约">
           <el-select v-model="model.contract" placeholder="请选择合约">
             <el-option v-for="contract in codeList" :key="contract" :label="contract" :value="contract"></el-option>
           </el-select>
@@ -57,9 +57,11 @@
 import { mapGetters } from 'vuex'
 import { createModel } from '@/api/model'
 import { getAllContractCode } from '@/api/contract'
+import waves from '@/directive/waves'
 
 export default {
   name: 'StrategyInfo',
+  directives: { waves },
   props: {
     strategy:{
       type: Object,
@@ -103,6 +105,7 @@ export default {
       deep:true,
       handle(){
         this.timeStamp = new Date().getTime()
+        this.ifShown = true
       }
     }
   },
@@ -152,6 +155,10 @@ export default {
   .div-wrapper{
     background: #fff;
     padding: 16px;
+  }
+
+  .strategy-description{
+    margin-top: 1rem;
   }
 }
 </style>
