@@ -1,4 +1,4 @@
-import { asyncRoutes, constantRoutes } from '@/router'
+import { asyncRoutes, constantRoutes } from '@/router/index'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -12,6 +12,7 @@ function hasPermission(role, route) {
     return true
   }
 }
+
 
 /**
  * Filter asynchronous routing tables by recursion
@@ -34,32 +35,77 @@ export function filterAsyncRoutes(routes, role) {
   return res
 }
 
+
+
 const state = {
   routes: [],
   addRoutes: []
 }
 
+// const mutations = {
+//   SET_ROUTES: (state, routes) => {
+//     state.addRoutes = routes
+//     state.routes = constantRoutes.concat(routes)
+//   }
+// }
+
+// const actions = {
+//   setRoutes({ commit }, role) {
+//     return new Promise(resolve => {
+//       let accessedRoutes
+//       if (role) {
+//         accessedRoutes = asyncRoutes || []
+//       } else {
+//         accessedRoutes = filterAsyncRoutes(asyncRoutes, role)
+//       }
+//       commit('SET_ROUTES', accessedRoutes)
+//       resolve(accessedRoutes)
+//     })
+//   }
+// }
 const mutations = {
-  SET_ROUTES: (state, routes) => {
-    state.addRoutes = routes
+  setRoutes(state, routes) {
     state.routes = constantRoutes.concat(routes)
-  }
+  },
+  setAllRoutes(state, routes) {
+    state.routes = constantRoutes.concat(routes)
+  },
+  setPartialRoutes(state, routes) {
+    state.partialRoutes = constantRoutes.concat(routes)
+  },
+  setMockRoutes(state) {
+    state.routes = constantRoutes
+  },
 }
 
+
 const actions = {
-  generateRoutes({ commit }, role) {
-    return new Promise(resolve => {
-      let accessedRoutes
-      if (role) {
-        accessedRoutes = asyncRoutes || []
-      } else {
-        accessedRoutes = filterAsyncRoutes(asyncRoutes, role)
-      }
-      commit('SET_ROUTES', accessedRoutes)
-      resolve(accessedRoutes)
-    })
-  }
+  async setRoutes({ commit }, permissions) {
+    //只过滤动态路由permissions，admin不再默认拥有全部权限
+    const finallyAsyncRoutes = await filterAsyncRoutes(
+      [...asyncRoutes],
+      permissions
+    )
+    commit('setRoutes', finallyAsyncRoutes)
+    return finallyAsyncRoutes
+  },
+  async setAllRoutes({ commit }) {
+    let { data } = await getRouterList()
+    data.push({ path: '*', redirect: '/404', hidden: true })
+    let accessRoutes = convertRouter(data)
+    commit('setAllRoutes', accessRoutes)
+    return accessRoutes
+  },
+  setPartialRoutes({ commit }, accessRoutes) {
+    commit('setPartialRoutes', accessRoutes)
+    return accessRoutes
+  },
+  setMockRoutes({ commit }) {
+    commit('setMockRoutes')
+    return true
+  },
 }
+
 
 export default {
   namespaced: true,

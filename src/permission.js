@@ -1,4 +1,4 @@
-import router from './router'
+import router from './router/index'
 import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
@@ -10,6 +10,8 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login','/case','/'] // no redirect whitelist
 
+var hasToken = false;
+
 //导航守卫，路由拦截器
 router.beforeEach(async(to, from, next) => {
   // start progress bar
@@ -20,7 +22,6 @@ router.beforeEach(async(to, from, next) => {
 
   // determine whether the user has logged in
   // const hasToken = store.getters.token
-  const hasToken = null;
 
   if (hasToken) {
     if (to.path === '/login') {
@@ -39,7 +40,7 @@ router.beforeEach(async(to, from, next) => {
           const { role } = await store.dispatch('user/getInfo')
 
           // generate accessible routes map based on roles
-          const accessRoutes = await store.dispatch('permission/generateRoutes', role)
+          const accessRoutes = await store.dispatch('permission/setRoutes', role)
 
           // dynamically add accessible routes
           router.addRoutes(accessRoutes)
@@ -58,7 +59,10 @@ router.beforeEach(async(to, from, next) => {
     }
   } else {
     /* has no token*/
-
+    if (!hasToken){
+      // mock role
+        hasToken = await store.dispatch('permission/setMockRoutes')
+    }
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly
       next()
@@ -68,7 +72,8 @@ router.beforeEach(async(to, from, next) => {
       NProgress.done()
     }
   }
-})
+}
+)
 
 router.afterEach(() => {
   // finish progress bar

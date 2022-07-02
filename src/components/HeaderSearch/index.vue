@@ -41,7 +41,7 @@ export default {
   },
   watch: {
     routes() {
-      this.searchPool = this.generateRoutes(this.routes)
+      this.searchPool = this.setRoutes(this.routes)
     },
     searchPool(list) {
       this.initFuse(list)
@@ -55,7 +55,7 @@ export default {
     }
   },
   mounted() {
-    this.searchPool = this.generateRoutes(this.routes)
+    this.searchPool = this.setRoutes(this.routes)
   },
   methods: {
     click() {
@@ -96,7 +96,7 @@ export default {
     },
     // Filter out the routes that can be displayed in the sidebar
     // And generate the internationalized title
-    generateRoutes(routes, basePath = '/', prefixTitle = []) {
+    setRoutes(routes, basePath = '/', prefixTitle = []) {
       let res = []
 
       for (const router of routes) {
@@ -120,7 +120,7 @@ export default {
 
         // recursive child routes
         if (router.children) {
-          const tempRoutes = this.generateRoutes(router.children, data.path, data.title)
+          const tempRoutes = this.setRoutes(router.children, data.path, data.title)
           if (tempRoutes.length >= 1) {
             res = [...res, ...tempRoutes]
           }

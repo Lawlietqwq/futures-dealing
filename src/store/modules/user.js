@@ -1,6 +1,6 @@
 import * as userApi from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import router, { resetRouter } from '@/router'
+import router, { resetRouter } from '@/router/index'
 
 const state = {
   token: getToken(),
@@ -180,7 +180,7 @@ const actions = {
     resetRouter()
 
     // generate accessible routes map based on roles
-    const accessRoutes = await dispatch('permission/generateRoutes', role, { root: true })
+    const accessRoutes = await dispatch('permission/setRoutes', role, { root: true })
     // dynamically add accessible routes
     router.addRoutes(accessRoutes)
 

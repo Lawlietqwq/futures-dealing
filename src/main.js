@@ -11,7 +11,7 @@ import enLang from 'element-ui/lib/locale/lang/en'// 如果使用中文语言包
 import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
-import router from './router'
+import router from './router/index'
 
 import './icons' // icon
 import './permission' // permission control

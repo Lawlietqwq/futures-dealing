@@ -35,18 +35,7 @@ export const constantRoutes = [
       component: () => import('@/views/error-page/401'),
       hidden: true
     },
-    // {
-    //   path: '/',
-    //   component: Layout,
-    //   children: [
-    //     {
-    //       path: '',
-    //       component: () => import('@/views/strategyView/index'),
-    //       name: 'strategyView',
-    //       meta: { title: '策略列表', icon: 'lock', noCache: true }
-    //     }
-    //   ]
-    // },
+
     {
       path: '/',
       component: Layout,
@@ -62,11 +51,11 @@ export const constantRoutes = [
     {
       path: '/model',
       component: Layout,
-      hidden: true,
       children: [
         {
-          path: '',
+          path: 'index',
           component: () => import('@/views/modelView/index'),
+          name: 'modelView',
           meta: { title: '模型列表', icon: 'lock', noCache: true }
         }
       ]
