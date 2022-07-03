@@ -16,12 +16,6 @@
       prop="strategyName"
       label="策略名">
     </el-table-column>
-    <el-table-column
-      v-if="false"
-      prop="remark"
-      label="策略简介"
-      width="0">
-    </el-table-column>
   </el-table>
 </template>
 

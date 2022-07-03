@@ -1,51 +1,68 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.projectName" placeholder="模型名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.modelName" placeholder="模型名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
-      </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        添加
       </el-button>
     </div>
 
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      :data="list"
+      :data="modelList"
       border
       fit
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
     >
+      <el-table-column type="expand">
+        <template slot-scope="props">
+          <el-form label-position="left" inline style="font-size: 0;">
+            <el-form-item label="创建时间" >
+              <span>{{ props.row.createTime }}</span>
+            </el-form-item>
+            <el-form-item label="策略启动时间">
+              <span>{{ props.row.startTime }}</span>
+            </el-form-item>
+            <el-form-item label="策略关闭时间">
+              <span>{{ props.row.endTime }}</span>
+            </el-form-item>
+            <el-form-item v-for="param in props.row.paramList" :key="param.paramId" :label="param.paramName">
+              <span>{{ param.paramValue }}</span>
+            </el-form-item>
+          </el-form>
+        </template>
+      </el-table-column>
       <el-table-column label="序号" type="index" align="center" width="80">
       </el-table-column>
-      <el-table-column label="模型编号" prop="pid" width="80px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.pid }}</span>
+      <el-table-column v-if="false" label="模型Id" prop="modelId" width="0">
+      </el-table-column>
+      <el-table-column label="合约号" prop="code" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="模型名" prop="projectName" width="150px" align="center">
-        <template slot-scope="{row}">
-          <span class="link-type" @click="caseList(row)">{{ row.projectName }}</span>
+      <el-table-column label="模型名" prop="modelName" width="150px" align="center">
+        <template v-slot="{row}">
+          <span class="link-type" @click="showModelDetail(row)">{{ row.modelName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="合约名" prop="uid" width="80px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.uid }}</span>
+      <el-table-column label="合约买卖" prop="buyOrSell" width="80px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.buyOrSell?'买':'卖' }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="模型描述" prop="comment" min-width="150px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.comment }}</span>
+      <el-table-column label="模型描述" prop="remark" min-width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.remark }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
-        <template slot-scope="{row,$index}">
+        <template v-slot="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
@@ -56,33 +73,53 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getModelList" />
+    
+    <el-dialog title="编辑模型" ref="dataDialog" :visable.sync="dialogFormVisible" :append-to-body="true">
+      <el-form ref="reviseDom" :model="tmpData" :key="timeStamp"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <!-- 修改模型名称 -->
         <el-form-item label="模型名">
-          <el-input v-model="temp.projectName" />
+          <el-input v-model="tmpData.modelName" />
         </el-form-item>
+        <!-- 修改合约 -->
+        <el-form-item label="更换合约">
+          <el-select v-model="tmpData.code" placeholder="请选择合约">
+            <el-option v-for="code in codeList" :key="code" :label="code" :value="code"></el-option>
+          </el-select>
+        </el-form-item>
+        <!-- 修改参数 -->
+        <el-form-item v-for="param in tmpData.paramList" :key="param.paramId" :label="param.paramName">
+          <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
+        </el-form-item>
+        <!-- 合约买or卖 -->
+        <el-form-item label="合约买卖">
+          <el-radio v-model="tmpData.buyOrSell" label="true">合约买</el-radio>
+          <el-radio v-model="tmpData.buyOrSell" label="false">合约卖</el-radio>
+        </el-form-item>
+        <!-- 模型描述 -->
         <el-form-item label="模型描述">
-          <el-input v-model="temp.comment" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入" />
+          <el-input v-model="tmpData.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消 
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <el-button type="primary" @click="updateData">
           确认
         </el-button>
       </div>
     </el-dialog>
 
+    
   </div>
 </template>
 
 <script>
-// import waves from '@/directive/waves' // waves directive
-// import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import waves from '@/directive/waves' 
+import Pagination from '@/components/Pagination'
+import { getAllContractCode } from '@/api/contract'
+import * as modelApi from '@/api/model'
 
 export default {
   name: 'ModelView',
@@ -91,65 +128,71 @@ export default {
   data() {
     return {
       tableKey: 0,
-      list: null,
       total: 0,
+      modelList: null,
+      detailVisable: false,
       listLoading: true,
+      codeList: [],
+      dialogFormVisible: false,
+      timeStamp: 1,
       listQuery: {
         page: 1,
         limit: 20,
-        projectName:'',
+        modelName:'',
         sort: '+id'
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      temp: {
-        pid: -1,
-        projectName: '',
+      tmpData: {
+        modelId: null,
+        code: '',
         uid: this.$store.getters.uid,
-        comment: '',
+        modelName: '',
+        remark: '',
+        paramList: [],
       },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: 'Edit',
-        create: 'Create'
-      },
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
-      downloadLoading: false
+      // rules: {
+      //   type: [{ required: true, message: 'type is required', trigger: 'change' }],
+      //   timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+      //   title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+      // },
     }
   },
+  watch:{
+    modelId:{
+      deep:true,
+      handle(){
+        console.log(typeof this.tmpData,'tmp')
+      }
+    }
+  },
+
   created() {
-    this.getList()
+    this.getModelList()
+    this.getContractCode()
   },
   methods: {
-    getList() {
+    getModelList() {
       this.listLoading = true
-      this.$store.dispatch('case/select_user_projects').then(res => {
-          let {stateCode, data} = res
-          data = data.map(value => {
-              let {createdTime,updatedTime,tid,...reset}={...value}
-                return reset
-            })
-          if(stateCode==1000){
-              this.list = data
-              this.total = data.length
-          }
-          setTimeout(() => {
-          this.listLoading = false
-          }, 1.5 * 1000)
+      modelApi.getAllModel().then(res => {
+        this.modelList = res.data
+        this.total = this.modelList.length
+        this.listLoading = false
       })
     },
+    getContractCode(){
+      getAllContractCode().then(res => {
+        this.codeList = res.data
+      })
+
+    },
     handleFilter() {
-      if(this.listQuery.projectName != ''){
+      if(this.listQuery.modelName != ''){
         this.querySearch()
         this.listQuery.page = 1
-        this.total = this.list.length
+        this.total = this.modelList.length
       }
       else{
-          this.getList()
+          this.getModelList()
       }
     },
 
@@ -168,97 +211,41 @@ export default {
       this.handleFilter()
     },
 
-    setTemp(pid,projectName,comment){
-        this.temp = {
-        pid: pid,
-        projectName: projectName,
-        comment: comment,
-      }
-    },
-    resetTemp() {
-      this.temp = {
-        pid: -1,
-        projectName: '',
-        comment: '',
-      }
-    },
-    handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.$store.dispatch('case/create_project',{projectName:this.temp.projectName, comment:this.temp.comment}).then(res => {
-            if(res.state == 1000){
-            const {pid,projectName,comment} = res.data.project
-            this.setTemp(pid, projectName, comment)
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Created Successfully',
-              type: 'success',
-              duration: 2000
-            })
-            }
-            else return false
-          })
-        }
-      })
-    },
     handleUpdate(row) {
-      this.setTemp(row.pid, row.projectName, row.comment)
-      this.dialogStatus = 'update'
+      const index = this.modelList.findIndex(model => model.modelId === row.modelId)
+      this.tmpData = this.modelList[index]
       this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+      this.detailVisable = true
     },
+
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs['reviseDom'].validate((valid) => {
         if (valid) {
-          let projectInfo = {
-              pid:this.temp.pid,
-              tid:0,
-              projectName:this.temp.projectName,
-              comment:this.temp.comment,
-              }
-              console.log(projectInfo)
-          this.$store.dispatch('case/update_project',projectInfo).then(stateCode => {
-            console.log(stateCode)
-            if(stateCode==1000){
-            const index = this.list.findIndex(v => v.pid === this.temp.pid)
-            console.log(index)
-            this.list.splice(index, 1, this.temp)
+          modelApi.updateModel(this.tmpData).then(res => {
+            const index = this.modelList.findIndex(model => model.modelId === this.tmpData.modelId)
+            this.modelList.splice(index, 1, this.tmpData)
             this.dialogFormVisible = false
             this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
+              title: '模型更新',
+              message: '更新成功',
               type: 'success',
-              duration: 2000
+              duration: 1000
             })
-            }
-            else return false 
+            return false 
           })
         }
       })
+      this.$nextTick(() => this.$refs['reviseDom'].clearValidate())
     },
     handleDelete(row, index) {
-      this.$store.dispatch('case/delete_project',[row.pid]).then(stateCode =>{
-      if(stateCode==1000){
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
-      }
+      modelApi.deleteModel(row.modelId).then(res =>{
+        this.$notify({
+          title: '模型删除',
+          message: '删除成功',
+          type: 'success',
+          duration: 1000
+        })
+      this.modelList.splice(index, 1)
       })
     },
     // getSortClass: function(key) {
@@ -269,16 +256,40 @@ export default {
     querySearch() {
       var searchData = []
       var vm = this
-      this.list.forEach(function (item) {
-        if (item.projectName.toLowerCase().indexOf(vm.listQuery.projectName.toLowerCase()) > -1) {
+      this.modelList.forEach(function (item) {
+        if (item.modelName.toLowerCase().indexOf(vm.listQuery.modelName.toLowerCase()) > -1) {
           searchData.push(item);
         }
       });
-      this.list = searchData;
+      this.modelList = searchData;
     },
-    caseList(row){
-        this.$router.push({name:'caseView',params:{pid:row.pid}})
+    showModelDetail(row){
+        modelApi.getModelById(row.modelId).then(res => {
+          this.detailVisable = true
+          this.modelDetal = res.data
+        })
+    },
+    //el-input bug 需要强制刷新
+    change(){
+       this.$forceUpdate();
     },
   }
 }
 </script>
+<style lang="scss" scoped>
+
+.app-container.demo-table-expand{
+    font-size: 0;
+    
+}
+  .app-container.demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+    .app-container.el-form-item {
+      margin-right: 0;
+      margin-bottom: 0;
+      width: 50%;
+    }
+
+</style>

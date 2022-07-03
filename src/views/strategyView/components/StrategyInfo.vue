@@ -7,29 +7,28 @@
         </el-button>
       </el-col>
       <el-col>
-        <el-descriptions :title="strategy.strategyName" :column="1" :key="timeStamp" class="strategy-description" border>
-          <el-descriptions-item v-for="item in strategy.paramNameList" :label="item.paramName" :key="item.paramName">{{item.paramDescription}}</el-descriptions-item>
-          <el-descriptions-item label="策略描述">
+        <el-descriptions :title="strategy.strategyName" :column="1" :key="timeStamp" class="strategy-description" :label-style="{'text-align':'center'}" border>
+          <el-descriptions-item v-for="item in strategy.strategyParamList" :label="item.paramName" :key="item.paramName" :label-style="{'text-align':'center','background':'#E1F3D8'}">{{item.paramDescription}}</el-descriptions-item>
+          <el-descriptions-item label="策略描述" >
             {{strategy.remark}}
           </el-descriptions-item>
         </el-descriptions>
       </el-col>
     </el-row>
     <el-dialog :title="strategy.strategyName" :visible.sync="dialogFormVisible">
-      <el-form ref="createForm" :rules="rules" :model="model" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form :model="model" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="模型名">
           <el-input v-model="model.modelName" />
         </el-form-item>
         <!-- 选择合约 -->
         <el-form-item label="选择合约">
-          <el-select v-model="model.contract" placeholder="请选择合约">
-            <el-option v-for="contract in codeList" :key="contract" :label="contract" :value="contract"></el-option>
+          <el-select v-model="model.code" placeholder="请选择合约">
+            <el-option v-for="code in codeList" :key="code" :label="code" :value="code"></el-option>
           </el-select>
         </el-form-item>
         <!-- 选择参数 -->
-        <el-form-item v-for="param in model.paramList" :key="param">
-            {{param}}
-          <el-input placeholder="请填写参数值" v-model="model.paramList[param]"></el-input>  
+        <el-form-item v-for="param in model.paramList" :key="param.paramName" :label="param.paramName">
+          <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
         </el-form-item>
         <!-- 买or卖 -->
         <el-form-item label="合约买卖">
@@ -41,11 +40,11 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          取消 
-        </el-button>
         <el-button type="primary" @click="createModelFromTemplate()">
           确认
+        </el-button>
+        <el-button @click="dialogFormVisible = false">
+          取消 
         </el-button>
       </div>
     </el-dialog>
@@ -89,19 +88,20 @@ export default {
       timeStamp: 0,
       dialogFormVisible: false,
       createLoading: false,
-      allStrategy: [],
       codeList: [],
       model: {
         modelName: '',
-        contract: '',
+        uid: this.$store.getters.uid,
+        strategyId: this.strategy.strategyId,
+        code: '',
         remark: '',
         buyOrSell: null,
-        paramList: {}
+        paramList: []
       },
     }
   },
   watch:{
-    strategyId:{
+    strategyName:{
       deep:true,
       handle(){
         this.timeStamp = new Date().getTime()
@@ -115,7 +115,9 @@ export default {
     ])
   },
   methods: {
-    createModelFromTemplate(model){
+    createModelFromTemplate(){
+      console.log(this.model,'obj')
+      const model = this.model
       this.createLoading = true
       createModel(model).then(res=>{
         this.createLoading = false
@@ -123,6 +125,7 @@ export default {
           message: '新建成功',
           type: 'success'
         })
+
         return true
       })
       .catch(e => {
@@ -133,32 +136,45 @@ export default {
     getAllContract() {
       getAllContractCode().then(res=>{ 
         this.codeList = res.data
-        var that = this
-        this.codeList.map((code)=>that.model.paramList.set(code,null))
-      })
+        var model = this.model
+        this.strategy.strategyParamList.forEach(param=>{model.paramList.push({
+          paramName: param.paramName,
+          paramValue: null,
+        })})
+        console.log(model,'model')
+        }
+      )
     },
     handleCreate(){
       this.getAllContract()
       this.dialogFormVisible = true
-    }
+    },
+    //重置表单
+    resetModel(){
+      this.model = {
+        modelName: '',
+        uid: this.$store.getters.uid,
+        strategyId: this.strategy.strategyId,
+        code: '',
+        remark: '',
+        buyOrSell: null,
+        paramList: []
+      }
+    },
+
+    //el-input bug 需要强制刷新
+    change(){
+       this.$forceUpdate();
+    },
 
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.strategyView-container {
-  padding: 32px;
-  background-color: rgb(240, 242, 245);
-  position: relative;
-
-  .div-wrapper{
-    background: #fff;
-    padding: 16px;
-  }
 
   .strategy-description{
     margin-top: 1rem;
   }
-}
+
 </style>

@@ -9,7 +9,7 @@
       </el-col>
       <el-col v-show="componentVisible" :span="16">
         <div class="div-wrapper">
-          <strategy-info :strategy ="strategy"/>
+          <strategy-info v-if="isHidden" :strategy ="strategy"/>
         </div>
       </el-col>
     </el-row>
@@ -35,6 +35,7 @@ export default {
     return{
       strategy: null,
       componentVisible: false,
+      isHidden: false,
     }
   },
 
@@ -50,6 +51,7 @@ export default {
           if(res.data){
             this.strategy = res.data
             this.componentVisible = true
+            this.isHidden = true
             console.log(this.strategy,'strategy')
           }
         })

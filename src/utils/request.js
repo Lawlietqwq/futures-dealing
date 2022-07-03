@@ -32,6 +32,7 @@ service.interceptors.request.use(
     // if(store.getters.uid>=0)
     // config.headers['uid']=store.getters.uid
     // return config
+    console.log(config)
     return config
   },
   error => {
@@ -57,7 +58,6 @@ service.interceptors.response.use(
     console.log(response, 'erearer')
     // var response = JSON.parse(response)
     const res = response.data
-    console.log(res,'asdasds')
     // 状态码不是200，报错
     if (res.code !== 200) {
       Message({
