@@ -2,14 +2,14 @@
   <div class="strategyView-container">
     
     <el-row :gutter="32" justify="space-around">
-      <el-col :span="8">
+      <el-col :span="wapperSpan">
         <div class="div-wrapper">
           <strategy-list @selectStrategy="selectStrategy" />
         </div>
       </el-col>
-      <el-col v-show="componentVisible" :span="16">
+      <el-col v-if="isHidden" :span="16">
         <div class="div-wrapper">
-          <strategy-info v-if="isHidden" :strategy ="strategy"/>
+          <strategy-info :strategy ="strategy"/>
         </div>
       </el-col>
     </el-row>
@@ -34,8 +34,8 @@ export default {
   data(){
     return{
       strategy: null,
-      componentVisible: false,
       isHidden: false,
+      wapperSpan: 24,
     }
   },
 
@@ -50,9 +50,8 @@ export default {
         getStrategyById(strategyId).then(res=>{
           if(res.data){
             this.strategy = res.data
-            this.componentVisible = true
             this.isHidden = true
-            console.log(this.strategy,'strategy')
+            this.wapperSpan = 8
           }
         })
     }

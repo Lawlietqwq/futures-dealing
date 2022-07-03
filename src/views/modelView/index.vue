@@ -19,20 +19,20 @@
     >
       <el-table-column type="expand">
         <template slot-scope="props">
-          <el-form label-position="left" inline style="font-size: 0;">
-            <el-form-item label="创建时间" >
-              <span>{{ props.row.createTime }}</span>
-            </el-form-item>
-            <el-form-item label="策略启动时间">
-              <span>{{ props.row.startTime }}</span>
-            </el-form-item>
-            <el-form-item label="策略关闭时间">
-              <span>{{ props.row.endTime }}</span>
-            </el-form-item>
-            <el-form-item v-for="param in props.row.paramList" :key="param.paramId" :label="param.paramName">
-              <span>{{ param.paramValue }}</span>
-            </el-form-item>
-          </el-form>
+          <el-descriptions :column="1" :label-style="{'text-align':'center'}" border>
+            <el-descriptions-item label="创建时间" >
+              {{ props.row.createTime }}
+            </el-descriptions-item>
+            <el-descriptions-item label="策略启动时间" >
+              {{ props.row.startTime }}
+            </el-descriptions-item>
+            <el-descriptions-item label="策略关闭时间" >
+              {{ props.row.endTime }}
+            </el-descriptions-item>
+            <el-descriptions-item v-for="param in props.row.paramList" :label="param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#E1F3D8'}">
+              {{param.paramValue}}
+            </el-descriptions-item>
+          </el-descriptions>
         </template>
       </el-table-column>
       <el-table-column label="序号" type="index" align="center" width="80">
@@ -54,18 +54,17 @@
           <span>{{ row.buyOrSell?'买':'卖' }}</span>
         </template>
       </el-table-column>
-
       <el-table-column label="模型描述" prop="remark" min-width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.remark }}</span>
         </template>
       </el-table-column>
-
       <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
         <template v-slot="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
+       
           <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)">
             删除
           </el-button>
@@ -75,6 +74,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getModelList" />
     
+    <!-- 编辑模型 -->
     <el-dialog title="编辑模型" ref="dataDialog" :visable.sync="dialogFormVisible" :append-to-body="true">
       <el-form ref="reviseDom" :model="tmpData" :key="timeStamp"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <!-- 修改模型名称 -->
@@ -238,15 +238,23 @@ export default {
       this.$nextTick(() => this.$refs['reviseDom'].clearValidate())
     },
     handleDelete(row, index) {
-      modelApi.deleteModel(row.modelId).then(res =>{
-        this.$notify({
-          title: '模型删除',
-          message: '删除成功',
-          type: 'success',
-          duration: 1000
+      var that = this
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          modelApi.deleteModel(row.modelId).then(res =>{
+            this.$notify({
+              title: '模型删除',
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+           })
+          that.modelList.splice(index, 1)
         })
-      this.modelList.splice(index, 1)
-      })
+      }).catch(() => {         
+        });
     },
     // getSortClass: function(key) {
     //   const sort = this.listQuery.sort
@@ -276,20 +284,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-
-.app-container.demo-table-expand{
-    font-size: 0;
-    
-}
-  .app-container.demo-table-expand label {
-    width: 90px;
-    color: #99a9bf;
-  }
-    .app-container.el-form-item {
-      margin-right: 0;
-      margin-bottom: 0;
-      width: 50%;
-    }
-
-</style>
