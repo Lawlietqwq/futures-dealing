@@ -66,22 +66,7 @@ export default {
       type: Object,
       require: true
     },
-    // strategyId: {
-    //   type: Number,
-    //   require: true
-    // },
-    // strategyName: {
-    //   type: String,
-    //   require: true
-    // },
-    // remark: {
-    //   type: String,
-    //   default: ''
-    // },
-    // paramNameList: {
-    //   type: Array,
-    //   default: []
-    // },
+
   },
   data(){
     return{
@@ -103,9 +88,8 @@ export default {
   watch:{
     strategyName:{
       deep:true,
-      handle(){
+      handler(){
         this.timeStamp = new Date().getTime()
-        this.ifShown = true
       }
     }
   },
@@ -114,6 +98,12 @@ export default {
       'uid',
     ])
   },
+  created(){
+    getAllContractCode().then(res=>{ 
+        this.codeList = res.data
+        }
+      )
+  },
   methods: {
     createModelFromTemplate(){
       console.log(this.model,'obj')
@@ -121,11 +111,11 @@ export default {
       this.createLoading = true
       createModel(model).then(res=>{
         this.createLoading = false
+        this.dialogFormVisible = false
         this.$message({
           message: '新建成功',
           type: 'success'
         })
-
         return true
       })
       .catch(e => {
@@ -133,20 +123,14 @@ export default {
         return false
     })
     },
-    getAllContract() {
-      getAllContractCode().then(res=>{ 
-        this.codeList = res.data
-        var model = this.model
-        this.strategy.strategyParamList.forEach(param=>{model.paramList.push({
-          paramName: param.paramName,
-          paramValue: null,
-        })})
-        console.log(model,'model')
-        }
-      )
-    },
+
     handleCreate(){
-      this.getAllContract()
+      this.resetModel()
+      var paramList = this.model.paramList
+      this.strategy.strategyParamList.forEach(param=>{paramList.push({
+        paramName: param.paramName,
+        paramValue: null,
+      })})     
       this.dialogFormVisible = true
     },
     //重置表单

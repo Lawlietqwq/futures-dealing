@@ -75,8 +75,8 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getModelList" />
     
     <!-- 编辑模型 -->
-    <el-dialog title="编辑模型" ref="dataDialog" :visable.sync="dialogFormVisible" :append-to-body="true">
-      <el-form ref="reviseDom" :model="tmpData" :key="timeStamp"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+    <el-dialog title="编辑模型" :visible.sync="dialogFormVisible">
+      <el-form ref="reviseDom" :model="tmpData"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <!-- 修改模型名称 -->
         <el-form-item label="模型名">
           <el-input v-model="tmpData.modelName" />
@@ -93,8 +93,8 @@
         </el-form-item>
         <!-- 合约买or卖 -->
         <el-form-item label="合约买卖">
-          <el-radio v-model="tmpData.buyOrSell" label="true">合约买</el-radio>
-          <el-radio v-model="tmpData.buyOrSell" label="false">合约卖</el-radio>
+          <el-radio v-model="tmpData.buyOrSell" :label="true">合约买</el-radio>
+          <el-radio v-model="tmpData.buyOrSell" :label="false">合约卖</el-radio>
         </el-form-item>
         <!-- 模型描述 -->
         <el-form-item label="模型描述">
@@ -120,6 +120,7 @@ import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import { getAllContractCode } from '@/api/contract'
 import * as modelApi from '@/api/model'
+import { copyObj } from '@/utils/util'
 
 export default {
   name: 'ModelView',
@@ -129,11 +130,10 @@ export default {
     return {
       tableKey: 0,
       total: 0,
-      modelList: null,
-      detailVisable: false,
       listLoading: true,
-      codeList: [],
       dialogFormVisible: false,
+      modelList: [],
+      codeList: [],
       timeStamp: 1,
       listQuery: {
         page: 1,
@@ -142,6 +142,7 @@ export default {
         sort: '+id'
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      tmp: 0,
       tmpData: {
         modelId: null,
         code: '',
@@ -157,14 +158,14 @@ export default {
       // },
     }
   },
-  watch:{
-    modelId:{
-      deep:true,
-      handle(){
-        console.log(typeof this.tmpData,'tmp')
-      }
-    }
-  },
+  // watch:{
+  //   modelId:{
+  //     deep:true,
+  //     handler(){
+  //       this.dialogFormVisible = true
+  //     }
+  //   }
+  // },
 
   created() {
     this.getModelList()
@@ -174,7 +175,7 @@ export default {
     getModelList() {
       this.listLoading = true
       modelApi.getAllModel().then(res => {
-        this.modelList = res.data
+        if(res.data) this.modelList = res.data
         this.total = this.modelList.length
         this.listLoading = false
       })
@@ -213,9 +214,9 @@ export default {
 
     handleUpdate(row) {
       const index = this.modelList.findIndex(model => model.modelId === row.modelId)
-      this.tmpData = this.modelList[index]
+      this.tmpData = copyObj(this.modelList[index])
       this.dialogFormVisible = true
-      this.detailVisable = true
+      this.$nextTick(() => this.$refs['reviseDom'].clearValidate())
     },
 
     updateData() {
@@ -225,17 +226,17 @@ export default {
             const index = this.modelList.findIndex(model => model.modelId === this.tmpData.modelId)
             this.modelList.splice(index, 1, this.tmpData)
             this.dialogFormVisible = false
+            console.log(this.tmpData,'this')
+            this.tableKey += 1
             this.$notify({
               title: '模型更新',
               message: '更新成功',
               type: 'success',
               duration: 1000
-            })
-            return false 
+            })   
           })
         }
       })
-      this.$nextTick(() => this.$refs['reviseDom'].clearValidate())
     },
     handleDelete(row, index) {
       var that = this

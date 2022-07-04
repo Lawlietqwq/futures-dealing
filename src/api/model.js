@@ -17,7 +17,7 @@ export async function createModel(data){
 
 export async function updateModel(data){
     const modelId = data.modelId
-    return await httpRequest.put(`/model/${modelId}`, data)
+    return await httpRequest.put(`/model`, data)
 }
 
 
