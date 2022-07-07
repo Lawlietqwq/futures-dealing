@@ -18,11 +18,11 @@ export const constantRoutes = [
         }
       ]
     },
-    // {
-    //   path: '/login',
-    //   component: () => import('@/views/login/index'),
-    //   hidden: true
-    // },
+    {
+      path: '/login',
+      component: () => import('@/views/login/index'),
+      hidden: true
+    },
     
 
     {
@@ -49,14 +49,26 @@ export const constantRoutes = [
       ]
     },
     {
-      path: '/model',
+      path: '/list',
       component: Layout,
       children: [
         {
           path: 'index',
-          component: () => import('@/views/modelView/index'),
+          component: () => import('@/views/model/index'),
           name: 'modelView',
-          meta: { title: '模型列表', icon: 'lock', noCache: true }
+          meta: { title: '策略列表', icon: 'lock', noCache: true }
+        }
+      ]
+    },
+    {
+      path: '/create',
+      component: Layout,
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/createView/index'),
+          name: 'modelView',
+          meta: { title: '创建策略', icon: 'lock', noCache: true }
         }
       ]
     },
