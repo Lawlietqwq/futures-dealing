@@ -4,28 +4,28 @@ import router, { resetRouter } from '@/router/index'
 
 const state = {
   token: getToken(),
-  name: '',
-  avatar: '',
-  introduction: '',
-  roles: [],
-  uid: 1,
+  username: '',
+  uid: -1,
+  email: '',
+  account: '',
+  tradingAccount: '',
 }
 
 const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_INTRODUCTION: (state, introduction) => {
-    state.introduction = introduction
+  SET_EMAIL: (state, email) => {
+    state.email = email
   },
-  SET_NAME: (state, name) => {
-    state.name = name
+  SET_USERNAME: (state, username) => {
+    state.username = username
   },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar
+  SET_ACCOUNT: (state, account) => {
+    state.account = account
   },
-  SET_ROLE: (state, role) => {
-    state.role = role
+  SET_TRADINGACCOUNT: (state, tradingAccount) => {
+    state.tradingAccount = tradingAccount
   },
   SET_UID: (state, uid) => {
     state.uid = uid
@@ -36,19 +36,19 @@ const actions = {
   // user login
   login({ commit }, userInfo) {
     const { username, password } = userInfo
+    console.log(userInfo)
     return new Promise((resolve, reject) => {
-      userApi.login(JSON.stringify({ username: username.trim(), password: password })).then(response => {
-        // var response = JSON.parse(response)
-        const { data } = response
-        // console.log(response)
-        // console.log(data)
-        if (response.state ==1000){
-        commit('SET_TOKEN', data.token)//state更新
-        commit('SET_UID', data.user.uid)//state更新
-        // commit('SET_ROLE', data.user.role)//state更新
-        // setToken(data.token)//cookie更新
-        }
-        resolve(response.state)
+      userApi.login(userInfo).then(res => {
+        console.log(res)
+        commit('SET_TOKEN', res.token)//state更新
+        // commit('SET_UID', data.uid)//state更新
+        // commit('SET_EMAIL', data.email)//state更新
+        // commit('SET_USERNAME', data.username)//state更新
+        // commit('SET_TRADINGACCOUNT', data.tradingAccount)//state更新
+        // commit('SET_ACCOUNT', data.account)//state更新
+        setToken(res.token)//cookie更新
+        console.log(res.token,'token')
+        resolve()
       }).catch(error => {
         reject(error)
       })
@@ -81,10 +81,6 @@ const actions = {
 
         const { role, userName } = user
 
-        // roles must be a non-empty array
-        // if (role<0) {
-        //   reject('getInfo: roles must be a non-null array!')
-        // }
 
         commit('SET_ROLE', role)
         commit('SET_NAME', userName)
@@ -102,15 +98,10 @@ const actions = {
     return new Promise((resolve, reject) => {
       userApi.login_out().then(() => {
         commit('SET_TOKEN', '')
-        commit('SET_ROLE', -1)
         commit('SET_UID', -1)
         removeToken()
         resetRouter()
-
-        // reset visited views and cached views
-        // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
         dispatch('tagsView/delAllViews', null, { root: true })
-
         resolve() 
       }).catch(error => {
         reject(error)
@@ -118,44 +109,6 @@ const actions = {
     })
   },
 
-    // forget password
-  getQuestion({ commit }, username) { 
-    return new Promise((resolve, reject) => {
-      userApi.get_safe_question(JSON.stringify({username: username})).then(response => {
-        resolve({stateCode:response.state, question:response.data.question})
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
-
-  // forget password
-  checkAnswer({ commit }, form) {
-      return new Promise((resolve, reject) => {
-        userApi.check_question_answer(JSON.stringify({username:form.username,answer:form.answer})).then(response => {
-          console.log('is',response)
-          if(response.state == 2000){
-            const data = response.data.tmpToken
-            commit('SET_TOKEN', data.token)
-            commit('SET_UID', data.userId)
-          }
-          resolve(response.state)
-        }).catch(error => {
-          reject(error)
-        })
-      })
-    },
-
-  // forget password
-  resetPass({ commit }, form) {
-    return new Promise((resolve, reject) => {
-      userApi.reset_forget_password(JSON.stringify({username:form.username,newPassword:form.answer})).then(response => {
-        resolve(response.state)
-      }).catch(error => {
-        reject(error)
-      })
-    })
-  },
 
   
   // remove token

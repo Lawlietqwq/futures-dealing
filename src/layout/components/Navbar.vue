@@ -37,8 +37,8 @@
           <a target="_blank" href="http://121.89.234.19:1080/futures_trading_system_grp/futures_trading_sys/-/wikis/home">
             <el-dropdown-item>Wiki</el-dropdown-item>
           </a>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">Log Out</span>
+          <el-dropdown-item divided @click.native="log_out">
+            <span style="display:block;">退出系统</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -54,6 +54,8 @@ import ErrorLog from '@/components/ErrorLog'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
+import { logout } from '@/api/user'
+import { getToken, removeToken, clearStorage } from '@/utils/auth'
 
 export default {
   components: {
@@ -75,9 +77,23 @@ export default {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    log_out() {
+      this.$confirm("确定要退出系统吗？","提示",{
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(async() => {
+        //请求参数
+        let params = {token:getToken()};
+        let res = await logout(params);
+        console.log(res)
+        if(res.code == 200){
+          console.log('??','sdsd')
+          removeToken();
+          clearStorage();
+          window.location.href='/login'
+        }
+      });   
     }
   }
 }

@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">OpenDog</h3>
+        <h3 class="title">期货交易系统</h3>
       </div>
 
       <el-form-item prop="username">
@@ -146,27 +146,18 @@ export default {
         this.isShow = false
         if (valid) {
           this.loading = true
-          this.isShow = true
           this.$store.dispatch('user/login', this.loginForm)
-            .then(stateCode => {
-              console.log(stateCode)
-              if(stateCode==1000){
-              // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+            .then(()=> {
               console.log(this.redirect)
               this.$router.push({ path: this.redirect || '/'})
               // this.$router.push({ path: '/', query: this.otherQuery })
               this.loading = false
-              }
-              else{
-                alert("登陆失败")
-                this.loading = false
-              }
             })
             .catch(() => {
               this.loading = false
             })
         } else {
-          console.log('error submit!!')
+          console.log('登录失败!')
           return false
         }
       })

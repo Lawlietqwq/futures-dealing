@@ -6,8 +6,10 @@ import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
+  baseURL: 'http://127.0.0.1:8888', 
   // baseURL: process.env.VUE_APP_BASE_API, 
-  baseURL: 'https://csubigdata.com/fut_trading_api/' , 
+  // baseURL: 'https://csubigdata.com/fut_trading_api/' , 
+
   timeout: 0, 
 })
 
@@ -15,12 +17,12 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     // do something before request is sent
-    // if (store.getters.token) {
+    if (store.getters.token) {
     //   // let each request carry token
     //   // ['X-Token'] is a custom headers key
     //   // please modify it according to the actual situation
-
-    // }
+        config.headers['token'] = store.getters.token
+    }
     //   config.headers['C'] = getToken()    
     // config.headers = {
     //   // 'token': store.getters.token,    
@@ -55,7 +57,7 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    console.log(response, 'erearer')
+    console.log(response, 'response')
     // var response = JSON.parse(response)
     const res = response.data
     // 状态码不是200，报错
@@ -72,7 +74,7 @@ service.interceptors.response.use(
     50014：token过期
     */
 
-      if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
+      if (res.code === 600 || res.code === 700 || res.code === 50014) {
         // 重新登录
         MessageBox.confirm('您已登出，请重新登录','警告', {
           confirmButtonText: '重新登录',

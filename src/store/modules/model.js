@@ -110,7 +110,7 @@ const actions = {
   // user logout
   logout({ commit, state, dispatch }) {
     return new Promise((resolve, reject) => {
-      userApi.login_out().then(() => {
+      userApi.logout().then(() => {
         commit('SET_TOKEN', '')
         commit('SET_ROLE', -1)
         commit('SET_UID', -1)
