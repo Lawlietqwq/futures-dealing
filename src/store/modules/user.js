@@ -5,7 +5,7 @@ import router, { resetRouter } from '@/router/index'
 const state = {
   token: getToken(),
   username: '',
-  uid: -1,
+  uid: 10,
   email: '',
   account: '',
   tradingAccount: '',

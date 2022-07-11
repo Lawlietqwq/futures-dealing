@@ -13,7 +13,7 @@
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      :data="futureList"
+      :data="list"
       row-key="code"
       ref="contractTable"
       border
@@ -25,7 +25,7 @@
     >
 
       <el-table-column
-        :reserve-selection="true"
+        reserve-selection
         type="selection"
         width="55">
       </el-table-column>
@@ -36,35 +36,37 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getModelList" />
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <!-- 添加策略实例 -->
       <el-dialog title="添加策略实例" :visible.sync="dialogFormVisible">
         <div>
           <el-form ref="createForm" :model="tmpData"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
             <!-- 选择买入策略 -->
-            <el-form-item label="买入策略">
-              <el-select v-model="tmpData.code" placeholder="请选择买入策略">
-                <el-option v-for="code in codeList" :key="code" :label="code" :value="code" @change="showTable(val)"></el-option>
+            <el-form-item label="开仓策略">
+              <el-select v-model="tmpData.strategy_sname1" placeholder="请选择开仓策略">
+                <el-option v-for="(value,name) in strategyNameList" :key="name+'buy'" :label="value" :value="name" @change="showTable(val)"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改买入策略参数 -->
-            <el-form-item v-for="param in tmpData.paramList" :key="param.paramId" :label="param.paramName">
-              <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
+            <el-form-item v-for="(value, name) in tmpData.params1" :key="name+'buy'" :label="value.remark">
+              <el-input placeholder="请填写参数值" v-model="value.value" @input="change()"></el-input>  
             </el-form-item>
             <el-divider></el-divider>
             <!-- 选择卖出策略 -->
-            <el-form-item label="卖出策略">
-              <el-select v-model="tmpData.code" placeholder="请选择卖出策略">
-                <el-option v-for="code in codeList" :key="code" :label="code" :value="code" @change="showTable(val)"></el-option>
+            <el-form-item label="平仓策略">
+              <el-select v-model="tmpData.strategy_sname2" placeholder="请选择平仓策略">
+                <el-option v-for="(value,name) in strategyNameList" :key="name+'sell'" :label="value" :value="name" @change="showTable(val)"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改卖出策略参数参数 -->
-            <el-form-item v-for="param in tmpData.paramList" :key="param.paramId" :label="param.paramName">
-              <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
+            <el-form-item v-for="(value, name) in tmpData.params2" :key="name+'sell'" :label="value.remark">
+              <el-input placeholder="请填写参数值" v-model="value.value" @input="change()"></el-input>  
             </el-form-item>
-            <!-- 模型描述 -->
-            <el-form-item label="模型描述">
-              <el-input v-model="tmpData.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="请输入" />
+            <!-- 买or卖 -->
+            <el-form-item label="合约买卖">
+              <el-radio v-model="upOrDown" label="0">买开卖平</el-radio>
+              <el-radio v-model="upOrDown" label="1">卖开买平</el-radio>
             </el-form-item>
           </el-form>
           <el-table
@@ -101,7 +103,8 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import { getAllContractCode } from '@/api/contract'
-import * as modelApi from '@/api/model'
+// import * as modelApi from '@/api/model'
+import * as strategyApi from '@/api/strategy-api'
 import { copyObj } from '@/utils/util'
 
 export default {
@@ -115,25 +118,31 @@ export default {
       listLoading: false,
       dialogFormVisible: false,
       modelVisible: false,
-      multipleSelection: [],
+      multipleSelection: null,
+      strategyNameList: [],
+      contractList: [],
       modelList: [],
-      codeList: [],
+      list:[],
       timeStamp: 1,
       listQuery: {
         page: 1,
         limit: 20,
-        modelName:'',
+        code:'',
         sort: '+id'
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      tmp: 0,
+      upOrDown: null,
       tmpData: {
-        modelId: null,
-        code: '',
         uid: this.$store.getters.uid,
-        modelName: '',
-        remark: '',
-        paramList: [],
+        code: '',
+        open_or_close1: 'open',
+        up_or_down1: '',
+        strategy_sname1: '',
+        params1: null,
+        open_or_close2: 'close',
+        up_or_down2: '',
+        strategy_sname2: '',
+        params2: null,
       },
       // rules: {
       //   type: [{ required: true, message: 'type is required', trigger: 'change' }],
@@ -142,42 +151,75 @@ export default {
       // },
     }
   },
-  // watch:{
-  //   modelId:{
-  //     deep:true,
-  //     handler(){
-  //       this.dialogFormVisible = true
-  //     }
-  //   }
-  // },
+  watch:{
+    upOrDown:{
+      deep:true,
+      handler(val){
+        if(val == 0){
+          this.tmpData.up_or_down1 = 'up'
+          this.tmpData.up_or_down2 = 'down'
+          }
+        else if(val == 1){
+          this.tmpData.up_or_down1 = 'down'
+          this.tmpData.up_or_down2 = 'up'
+        }   
+      }
+    },
+    'tmpData.strategy_sname1':{
+      deep:true,
+      handler(val){
+        if(val != ''){
+          strategyApi.getStrategyParam(val).then(res => {
+            this.tmpData.params1 = res.data
+            this.$refs['createForm'].$forceUpdate()
+          })   
+        }
+      }
+    },
+    'tmpData.strategy_sname2':{
+      deep:true,
+      handler(val){
+        if(val != ''){
+          strategyApi.getStrategyParam(val).then(res => {
+            this.tmpData.params2 = res.data
+            this.$refs['createForm'].$forceUpdate()
+          })   
+        }  
+      }
+    }
+  },
 
   created() {
-    // this.getModelList()
-    // this.getContractCode()
+    this.getStrategyList()
+    this.getContractList()
+    // this.getList()
   },
   methods: {
-    getModelList() {
+    getStrategyList() {
       this.listLoading = true
-      modelApi.getAllModel().then(res => {
-        if(res.data) this.modelList = res.data
-        this.total = this.modelList.length
+      strategyApi.getStrategyName().then(res => {
+        if(res.data) this.strategyNameList = res.data
         this.listLoading = false
       })
     },
-    getContractCode(){
-      getAllContractCode().then(res => {
-        this.codeList = res.data
+    getContractList(){
+      this.listLoading = true
+      strategyApi.getCodeList().then(res => {
+        this.contractList = res.data
+        this.total = this.contractList.length
+        this.getList()
+        this.listLoading = false
       })
-
     },
     handleFilter() {
-      if(this.listQuery.modelName != ''){
+      if(this.listQuery.code != ''){
         this.querySearch()
         this.listQuery.page = 1
-        this.total = this.modelList.length
+        this.total = this.contractList.length
+        this.getList()
       }
       else{
-          this.getModelList()
+          this.getContractList()
       }
     },
 
@@ -197,34 +239,65 @@ export default {
     },
 
     handleCreate() {
-      this.dialogFormVisible = true
-      
-      this.$nextTick(() => this.$refs['contractTable'].clearSelection())
+      var that = this
+      if(this.multipleSelection == null){
+        this.$notify({
+            title: '警告',
+            message: '请选择合约',
+            type: 'error',
+            duration: 1000
+            })
+      } else{
+        this.dialogFormVisible = true
+        this.$refs['createForm'].clearSelection()
+        // this.$nextTick(() => that.$refs['createForm'].clearSelection())
+      }
     },
 
     updateData() {
       this.$refs['createForm'].validate((valid) => {
         if (valid) {
-          modelApi.updateModel(this.tmpData).then(res => {
-            const index = this.modelList.findIndex(model => model.modelId === this.tmpData.modelId)
-            this.modelList.splice(index, 1, this.tmpData)
-            this.dialogFormVisible = false
-            console.log(this.tmpData,'this')
-            this.tableKey += 1
-            this.$notify({
-              title: '模型更新',
-              message: '更新成功',
-              type: 'success',
-              duration: 1000
-            })   
-          })
+          for(var code of this.multipleSelection){
+            this.tmpData.code = code.code 
+            this.tmpData.params1 = JSON.stringify(this.tmpData.params1)
+            this.tmpData.params2 = JSON.stringify(this.tmpData.params2)
+            strategyApi.createModel(this.tmpData).then(res => {      
+            })
+          }
+          this.dialogFormVisible = false
+          this.tableKey += 1
+          this.$notify({
+            title: '提示',
+            message: '创建成功',
+            type: 'success',
+            duration: 1000
+            })
         }
+        this.multipleSelection = null
+        this.resetForm()
       })
     },
 
+
+    resetForm(){
+      this.tmpData =  {
+        uid: this.$store.getters.uid,
+        code: '',
+        open_or_close1: 'open',
+        up_or_down1: '',
+        strategy_sname1: '',
+        params1: null,
+        open_or_close2: 'close',
+        up_or_down2: '',
+        strategy_sname2: '',
+        params2: null,
+      }
+    },
+
     showTable(val){
-      this.modelVisible = true
-      //获取table参数,按code和val(策略)筛选
+
+      // this.modelVisible = true
+      
     },
 
     handleSelectionChange(val) {
@@ -234,23 +307,34 @@ export default {
     querySearch() {
       var searchData = []
       var vm = this
-      this.modelList.forEach(function (item) {
-        if (item.modelName.toLowerCase().indexOf(vm.listQuery.modelName.toLowerCase()) > -1) {
+      this.contractList.forEach(function (item) {
+        if (item.code.toLowerCase().indexOf(vm.listQuery.code.toLowerCase()) > -1) {
           searchData.push(item);
         }
       });
-      this.modelList = searchData;
+      this.contractList = searchData;
     },
-    showModelDetail(row){
-        modelApi.getModelById(row.modelId).then(res => {
-          this.detailVisable = true
-          this.modelDetal = res.data
-        })
-    },
+
     //el-input bug 需要强制刷新
     change(){
        this.$forceUpdate();
     },
+
+    //前端分页
+    getList() {
+      let list, start, end, isFirst, isLast
+      isFirst = this.total < this.listQuery.limit
+      isLast = Math.ceil(this.total / this.listQuery.limit) === this.listQuery.page
+      start = (this.listQuery.page - 1) * this.listQuery.limit
+      end = isFirst || isLast ? start + (this.total % this.listQuery.limit) : start + this.listQuery.limit
+      list = copyObj(this.contractList).slice(start, end)
+      list.forEach((item, index) => {
+        item.seq = index + start
+      })
+      this.list = list
+      this.tableKey++
+      return list
+    }
   }
 }
 </script>
