@@ -6,9 +6,9 @@ import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
-  // baseURL: 'http://127.0.0.1:8888', 
+  baseURL: 'http://127.0.0.1:8888', 
   // baseURL: process.env.VUE_APP_BASE_API, 
-  baseURL: 'https://csubigdata.com/fut_trading_api/' , 
+  // baseURL: 'https://csubigdata.com/fut_trading_api/' , 
 
   timeout: 0, 
 })
@@ -17,12 +17,12 @@ const service = axios.create({
   service.interceptors.request.use(
     config => {
       // do something before request is sent
-      // if (store.getters.token) {
+      if (store.getters.token) {
 
-      //     config.headers['token'] = store.getters.token
-      // }
-      config.headers['Access-Control-Allow-Origin'] = "*"
-      config.headers['Access-Control-Allow-Methods'] = "*"
+          config.headers['token'] = store.getters.token
+      }
+      // config.headers['Access-Control-Allow-Origin'] = "*"
+      // config.headers['Access-Control-Allow-Methods'] = "*"
 
       console.log(config,'config')
       return config

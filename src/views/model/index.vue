@@ -84,9 +84,11 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import { getAllContractCode } from '@/api/contract'
-import * as strategyApi from '@/api/strategy-api'
+// import * as strategyApi from '@/api/strategy-api'
+import * as strategyApi from '@/api/strategy'
+import * as modelApi from '@/api/model'
 import { copyObj } from '@/utils/util'
-import axios from 'axios'
+
 export default {
   name: 'ModelPage',
   components: { Pagination },
@@ -150,7 +152,7 @@ export default {
   methods: {
     getModelList() {
       this.listLoading = true
-      strategyApi.getTradingInstance().then(res => {
+      modelApi.getAllModel().then(res => {
         if(res.data){
           this.modelList = res.data
           for (var model of this.modelList){

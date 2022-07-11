@@ -1,7 +1,8 @@
+import store from '@/store'
 import httpRequest from '@/utils/request'
 
-export async function getAllModel(){
-    return await httpRequest.get('/model', null)
+export async function getAllModelByUid(){
+    return await httpRequest.get(`/model/user/${store.getters.token}`, null)
 }
 
 

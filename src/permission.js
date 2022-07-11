@@ -12,18 +12,17 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/login','/register'] // no redirect whitelist
 
  
-var hasToken = null;
+// var hasToken = null;
 
 //导航守卫，路由拦截器
 router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
-  // const hasToken = store.getters.token;
   // set page title
   document.title = getPageTitle(to.meta.title)
 
   // determine whether the user has logged in
-  // const hasToken = store.getters.token
+  const hasToken = store.getters.token
 
   if (hasToken) {
     if (to.path === '/login') {
@@ -63,18 +62,16 @@ router.beforeEach(async(to, from, next) => {
     }
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
-      // in the free login whitelist, go directly
-      await store.dispatch('permission/setMockRoutes')
-      router.addRoutes(store.getters.permission_routes)
-      hasToken = true
+      // await store.dispatch('permission/setMockRoutes')
+      // router.addRoutes(store.getters.permission_routes)
+      // hasToken = true
       next()
     } else {
-      // other pages that do not have permission to access are redirected to the login page.
-      // next(`/login?redirect=${to.path}`)
-      await store.dispatch('permission/setMockRoutes')
-      router.addRoutes(store.getters.permission_routes)
-      hasToken = true
-      next()
+      next(`/login?redirect=${to.path}`)
+      // await store.dispatch('permission/setMockRoutes')
+      // router.addRoutes(store.getters.permission_routes)
+      // hasToken = true
+      // next()
       NProgress.done()
     }
   }
