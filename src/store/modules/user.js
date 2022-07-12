@@ -5,7 +5,7 @@ import router, { resetRouter } from '@/router/index'
 const state = {
   token: getToken(),
   username: '',
-  uid: 10,
+  uid: null,
   email: '',
   account: '',
   tradingAccount: '',
@@ -47,7 +47,7 @@ const actions = {
         // commit('SET_TRADINGACCOUNT', data.tradingAccount)//state更新
         // commit('SET_ACCOUNT', data.account)//state更新
         setToken(res.token)//cookie更新
-        console.log(res.token,'token')
+        getInfo()
         resolve()
       }).catch(error => {
         reject(error)
@@ -72,21 +72,21 @@ const actions = {
   // get user info
   getInfo({ commit }) {
     return new Promise((resolve, reject) => {
-      userApi.get_user_detail().then(response => {
-        const { user } = response.data
+      userApi.getUserInfo().then(res => {
+        const { user } = res.data
 
         if (!user) {
-          reject('Verification failed, please Login again.')
+          reject('认证失败，请重新登录')
         }
 
-        const { role, userName } = user
+        const { uid, username, account, tradingAccount } = user
 
 
-        commit('SET_ROLE', role)
-        commit('SET_NAME', userName)
-        // commit('SET_AVATAR', avatar)
-        // commit('SET_INTRODUCTION', introduction)
-        resolve(user)
+        commit('SET_UID', uid)
+        commit('SET_NAME', username)
+        commit('SET_ACCOUNT', account)
+        commit('SET_TRADINGACCOUNT', tradingAccount)
+        resolve()
       }).catch(error => {
         reject(error)
       })

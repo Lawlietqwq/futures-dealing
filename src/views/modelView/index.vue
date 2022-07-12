@@ -174,7 +174,7 @@ export default {
   methods: {
     getModelList() {
       this.listLoading = true
-      modelApi.getAllModel().then(res => {
+      modelApi.getAllModelByUid().then(res => {
         if(res.data) this.modelList = res.data
         this.total = this.modelList.length
         this.listLoading = false
