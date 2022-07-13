@@ -20,22 +20,21 @@
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-descriptions :column="1" :label-style="{'text-align':'center'}" border>
-            <el-descriptions-item v-for="(value, name) in props.row.params1" :label="'开仓策略——'+value.remark" :key="name" :label-style="{'text-align':'center','background':'#E1F3D8'}">
-              {{value.value}}
+            <el-descriptions-item v-for="param in props.row.openParams" :label="'开仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#E1F3D8'}">
+              {{param.paramValue}}
             </el-descriptions-item>
-            <el-descriptions-item v-for="(value, name) in props.row.params2" :label="'平仓策略——'+value.remark" :key="name" :label-style="{'text-align':'center','background':'#FDE2E2'}">
-              {{value.value}}
+            <el-descriptions-item v-for="param in props.row.openParams" :label="'平仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#FDE2E2'}">
+              {{param.paramValue}}
             </el-descriptions-item>
-            
           </el-descriptions>
         </template>
       </el-table-column>
 
       <el-table-column label="序号" type="index" align="center" width="80">
       </el-table-column>
-      <el-table-column label="实例id" prop="instance_id" width="0px">
+      <el-table-column v-if="false" label="实例id" prop="modelId" width="0px">
         <template v-slot="{row}">
-          <span>{{ row.instance_id }}</span>
+          <span>{{ row.modelId }}</span>
         </template>
       </el-table-column>
       <el-table-column label="合约" prop="code" width="150px" align="center">
@@ -43,25 +42,25 @@
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓策略" prop="strategy_sname1" width="150px" align="center">
+      <el-table-column label="开仓策略" prop="openName" width="150px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.strategy_sname1 }}</span>
+          <span>{{ row.openName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="平仓策略" prop="strategy_sname2" width="150px" align="center">
+      <el-table-column label="平仓策略" prop="closeName" width="150px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.strategy_sname2 }}</span>
+          <span>{{ row.closeName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="配置时间" prop="create_time" width="300px" align="center">
+      <el-table-column label="配置时间" prop="createTime" width="300px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.create_time }}</span>
+          <span>{{ row.createTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" prop="instance_status" class-name="status-col" width="100">
+      <el-table-column label="状态" prop="modelState" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <el-tag :type="stateMap[row.instance_status]">
-            {{ row.instance_status=='started'?"正在运行":"已暂停" }}
+          <el-tag :type="stateMap[row.modelState]">
+            {{ stateNameMap[row.modelState] }}
           </el-tag>
         </template>
       </el-table-column>
@@ -69,7 +68,7 @@
         <template v-slot="{row}" style="display: flex;justify-content: space-around;">
           <el-button type="success" class="opsButton" @click="modelStart(row)">启动</el-button>
           <el-button type="info" class="opsButton" @click="modelStop(row)">暂停</el-button>
-          <el-button type="warning" class="opsButton" @click="modelCover(row)">平仓</el-button>
+          <el-button type="warning" class="opsButton" @click="modelClose(row)">平仓</el-button>
           <el-button type="danger" class="opsButton" @click="modelDel(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -99,10 +98,14 @@ export default {
       total: 0,
       listLoading: false,
       dialogFormVisible: false,
-      stateMap:{started:"success",created:"info"},
-      // modelList: [{code:'TS2209',strategyName:'均线策略',createTime:'2022/7/7',state:1,paramList:[{paramName:'快均线',paramValue:10},{paramName:'慢均线',paramValue:10}]},{code:'T2209',strategyName:'布林线策略',createTime:'2022/7/7',state:0,paramList:[{paramName:'上轨',paramValue:30},{paramName:'中轨',paramValue:20},{paramName:'下轨',paramValue:10}]}],
+      stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
+      stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
+      tradingVO:{
+        modelId: null,
+        account: this.$stroe.getters.account,
+        tradingAccount: this.$store.getters.tradingAccount,
+      },
       modelList:[], 
-      codeList: [],
       list: [],
       timeStamp: 1,
       listQuery: {
@@ -113,14 +116,7 @@ export default {
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       tmp: 0,
-      tmpData: {
-        modelId: null,
-        code: '',
-        uid: this.$store.getters.uid,
-        modelName: '',
-        remark: '',
-        paramList: [],
-      },
+
       // rules: {
       //   type: [{ required: true, message: 'type is required', trigger: 'change' }],
       //   timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
@@ -138,16 +134,7 @@ export default {
   // },
 
   created() {
-    // axios.get('https://csubigdata.com/fut_trading_api/', {
-    //   params: {
-    //     qtype:'search_strategy_template',
-    //     uid: 10
-    //   }
-    // }).then(res =>{
-    //   console.log(res)
-    // })
     this.getModelList()
-    // this.getContractCode()
   },
   methods: {
     getModelList() {
@@ -155,25 +142,41 @@ export default {
       modelApi.getAllModel().then(res => {
         if(res.data){
           this.modelList = res.data
-          for (var model of this.modelList){
-            model.params1 = eval("("+model.params1+")")
-            model.params2 = eval("("+model.params2+")")
-          }
+          // for (var model of this.modelList){
+          //   model.params1 = eval("("+model.params1+")")
+          //   model.params2 = eval("("+model.params2+")")
+          // }
           this.total = this.modelList.length
           this.getList()
         }
         this.listLoading = false
       })
     },
-    getContractCode(){
-      getAllContractCode().then(res => {
-        this.codeList = res.data
-      })
 
-    },
     modelStart(row){
-      strategyApi.startModel(row.instance_id).then(() => {
-        row.instance_status = 'started'
+      this.tradingVO.modelId = row.modelId
+      modelApi.startModel(this.tradingVO).then(() => {
+        row.modelState = 'started'
+        this.tableKey++
+      })     
+    },
+    modelStop(row){
+      modelApi.pauseModel({modelId:row.modelId, modelState:row.modelState}).then(() => {
+        row.modelState = 'created'
+        this.tableKey++
+      })     
+    },
+    modelClose(row){
+      this.tradingVO.modelId = row.modelId
+      row.modelState = 'closing'
+      this.tableKey++
+      modelApi.forceCloseModel(this.tradingVO).then(() => {
+        row.modelState = 'closed'
+        this.tableKey++
+      })     
+    },
+    modelDel(row){
+      modelApi.deleteModel(row.modelId).then(() => {
         this.tableKey++
       })     
     },
@@ -185,7 +188,7 @@ export default {
         this.getList()
       }
       else{
-          this.getModelList()
+        this.getModelList()
       }
     },
 
@@ -204,31 +207,6 @@ export default {
       this.handleFilter()
     },
 
-    handleCreate() {
-      this.dialogFormVisible = true
-      
-      this.$nextTick(() => this.$refs['contractTable'].clearSelection())
-    },
-
-    updateData() {
-      this.$refs['createForm'].validate((valid) => {
-        if (valid) {
-          modelApi.updateModel(this.tmpData).then(res => {
-            const index = this.modelList.findIndex(model => model.modelId === this.tmpData.modelId)
-            this.modelList.splice(index, 1, this.tmpData)
-            this.dialogFormVisible = false
-            console.log(this.tmpData,'this')
-            this.tableKey += 1
-            this.$notify({
-              title: '模型更新',
-              message: '更新成功',
-              type: 'success',
-              duration: 1000
-            })   
-          })
-        }
-      })
-    },
     handleDelete(row, index) {
       var that = this
       this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {

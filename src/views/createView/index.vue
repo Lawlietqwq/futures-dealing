@@ -102,9 +102,10 @@
 <script>
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
-import { getAllContractCode } from '@/api/contract'
-// import * as modelApi from '@/api/model'
-import * as strategyApi from '@/api/strategy-api'
+import * as contractApi from '@/api/contract'
+import * as modelApi from '@/api/model'
+import * as strategyApi from '@/api/strategy'
+// import * as strategyApi from '@/api/strategy-api'
 import { copyObj } from '@/utils/util'
 
 export default {
@@ -192,19 +193,18 @@ export default {
   created() {
     this.getStrategyList()
     this.getContractList()
-    // this.getList()
   },
   methods: {
     getStrategyList() {
       this.listLoading = true
-      strategyApi.getStrategyName().then(res => {
-        if(res.data) this.strategyNameList = res.data
+      strategyApi.getAllStrategy().then(res => {
+        if(res.data) this.strategyList = res.data
         this.listLoading = false
       })
     },
     getContractList(){
       this.listLoading = true
-      strategyApi.getCodeList().then(res => {
+      contractApi.getAllContractCode().then(res => {
         this.contractList = res.data
         this.total = this.contractList.length
         this.getList()

@@ -1,8 +1,12 @@
 import store from '@/store'
 import httpRequest from '@/utils/request'
 
+export async function getAllModel(){
+    return await httpRequest.get(`/model`, null)
+}
+
 export async function getAllModelByUid(){
-    return await httpRequest.get(`/model/user/${store.getters.token}`, null)
+    return await httpRequest.get(`/model/user/${store.getters.uid}`, null)
 }
 
 
@@ -17,7 +21,6 @@ export async function createModel(data){
 
 
 export async function updateModel(data){
-    const modelId = data.modelId
     return await httpRequest.put(`/model`, data)
 }
 
@@ -25,3 +28,16 @@ export async function updateModel(data){
 export async function deleteModel(modelId){
     return await httpRequest.delete(`/model/${modelId}`, null)
 }
+
+export async function startModel(tradingVO){
+    return await httpRequest.put('/start', tradingVO)
+}
+
+export async function pauseModel(modelVO){
+    return await httpRequest.put('/pause', modelVO)
+}
+
+export async function forceCloseModel(tradingVO){
+    return await httpRequest.put('/force', tradingVO)
+}
+
