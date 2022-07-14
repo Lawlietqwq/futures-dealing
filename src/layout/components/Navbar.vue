@@ -85,7 +85,7 @@ export default {
       }).then(async() => {
         //请求参数
         let params = {token:getToken()};
-        let res = await logout(params);
+        let res = await logout();
         console.log(res)
         if(res.code == 200){
           console.log('??','sdsd')

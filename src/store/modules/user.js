@@ -47,7 +47,6 @@ const actions = {
         // commit('SET_TRADINGACCOUNT', data.tradingAccount)//state更新
         // commit('SET_ACCOUNT', data.account)//state更新
         setToken(res.token)//cookie更新
-        getInfo()
         resolve()
       }).catch(error => {
         reject(error)
@@ -73,7 +72,7 @@ const actions = {
   getInfo({ commit }) {
     return new Promise((resolve, reject) => {
       userApi.getUserInfo().then(res => {
-        const { user } = res.data
+        const user = res.data
 
         if (!user) {
           reject('认证失败，请重新登录')
@@ -82,7 +81,7 @@ const actions = {
         const { uid, username, account, tradingAccount } = user
 
 
-        commit('SET_UID', uid)
+        commit('SET_UID', parseInt(uid))
         commit('SET_NAME', username)
         commit('SET_ACCOUNT', account)
         commit('SET_TRADINGACCOUNT', tradingAccount)
@@ -96,7 +95,7 @@ const actions = {
   // user logout
   logout({ commit, state, dispatch }) {
     return new Promise((resolve, reject) => {
-      userApi.login_out().then(() => {
+      userApi.logout().then(() => {
         commit('SET_TOKEN', '')
         commit('SET_UID', -1)
         removeToken()

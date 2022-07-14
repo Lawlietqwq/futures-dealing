@@ -23,7 +23,7 @@
             <el-descriptions-item v-for="param in props.row.openParams" :label="'开仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#E1F3D8'}">
               {{param.paramValue}}
             </el-descriptions-item>
-            <el-descriptions-item v-for="param in props.row.openParams" :label="'平仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#FDE2E2'}">
+            <el-descriptions-item v-for="param in props.row.closeParams" :label="'平仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#FDE2E2'}">
               {{param.paramValue}}
             </el-descriptions-item>
           </el-descriptions>
@@ -102,7 +102,7 @@ export default {
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
       tradingVO:{
         modelId: null,
-        account: this.$stroe.getters.account,
+        account: this.$store.getters.account,
         tradingAccount: this.$store.getters.tradingAccount,
       },
       modelList:[], 
@@ -111,7 +111,7 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        modelName:'',
+        code:'',
         sort: '+id'
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -135,12 +135,14 @@ export default {
 
   created() {
     this.getModelList()
+    
   },
   methods: {
     getModelList() {
       this.listLoading = true
       modelApi.getAllModel().then(res => {
         if(res.data){
+          console.log(this.modelList)
           this.modelList = res.data
           // for (var model of this.modelList){
           //   model.params1 = eval("("+model.params1+")")
@@ -161,19 +163,23 @@ export default {
       })     
     },
     modelStop(row){
-      modelApi.pauseModel({modelId:row.modelId, modelState:row.modelState}).then(() => {
+      modelApi.pauseModel({modelId:row.modelId, modelState:row.modelState}).then(() =>
+       {
         row.modelState = 'created'
         this.tableKey++
       })     
     },
     modelClose(row){
       this.tradingVO.modelId = row.modelId
+      var tmpState = row.modelState
       row.modelState = 'closing'
       this.tableKey++
       modelApi.forceCloseModel(this.tradingVO).then(() => {
         row.modelState = 'closed'
         this.tableKey++
-      })     
+      }).catch(err =>
+        row.modelState = tmpState
+      )
     },
     modelDel(row){
       modelApi.deleteModel(row.modelId).then(() => {
@@ -181,7 +187,7 @@ export default {
       })     
     },
     handleFilter() {
-      if(this.listQuery.modelName != ''){
+      if(this.listQuery.code != ''){
         this.querySearch()
         this.listQuery.page = 1
         this.total = this.modelList.length
@@ -233,7 +239,7 @@ export default {
       var searchData = []
       var vm = this
       this.modelList.forEach(function (item) {
-        if (item.modelName.toLowerCase().indexOf(vm.listQuery.modelName.toLowerCase()) > -1) {
+        if (item.code.toLowerCase().indexOf(vm.listQuery.code.toLowerCase()) > -1) {
           searchData.push(item);
         }
       });
@@ -253,6 +259,8 @@ export default {
     //前端分页
     getList() {
       let list, start, end, isFirst, isLast
+      console.log(this.listQuery)
+      console.log(this.listQuery.limit)
       isFirst = this.total < this.listQuery.limit
       isLast = Math.ceil(this.total / this.listQuery.limit) === this.listQuery.page
       start = (this.listQuery.page - 1) * this.listQuery.limit

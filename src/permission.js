@@ -34,7 +34,8 @@ router.beforeEach(async(to, from, next) => {
       const permission_routes =  store.getters.permission_routes
       if (permission_routes.length) {
         next()
-      } else {
+      } else 
+      {
         try {
           // get user info
           // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
@@ -66,6 +67,7 @@ router.beforeEach(async(to, from, next) => {
       // router.addRoutes(store.getters.permission_routes)
       // hasToken = true
       next()
+      NProgress.done()
     } else {
       next(`/login?redirect=${to.path}`)
       // await store.dispatch('permission/setMockRoutes')

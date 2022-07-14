@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie'
+import store from '@/store'
 
 const TokenKey = 'Admin-Token'
 
@@ -12,6 +13,11 @@ export function setToken(token) {
 
 export function removeToken() {
   return Cookies.remove(TokenKey)
+}
+
+export function setLocalStorage(){
+  let userInfo = {uid:store.getters.uid} 
+  return sessionStorage.clear()
 }
 
 export function clearStorage(){

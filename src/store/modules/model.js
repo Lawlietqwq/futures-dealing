@@ -82,22 +82,25 @@ const actions = {
   // get user info
   getInfo({ commit }) {
     return new Promise((resolve, reject) => {
-      userApi.get_user_detail().then(response => {
-        const { user } = response.data
+      userApi.get_user_detail().then(res => {
+        const data = res.data
 
-        if (!user) {
-          reject('Verification failed, please Login again.')
+        if (!data) {
+          reject()
         }
 
-        const { role, userName } = user
+        const { uid, userName, email, account, traingAccount } = data
 
         // roles must be a non-empty array
         // if (role<0) {
         //   reject('getInfo: roles must be a non-null array!')
         // }
 
-        commit('SET_ROLE', role)
+        commit('SET_UID', uid)
         commit('SET_NAME', userName)
+        commit('SET_EMAIL', email)
+        commit('SET_ACCOUNT', account)
+        commit('SET_TRADINGACCOUNT', traingAccount)
         // commit('SET_AVATAR', avatar)
         // commit('SET_INTRODUCTION', introduction)
         resolve(user)

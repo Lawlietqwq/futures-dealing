@@ -30,14 +30,14 @@ export async function deleteModel(modelId){
 }
 
 export async function startModel(tradingVO){
-    return await httpRequest.put('/start', tradingVO)
+    return await httpRequest.put('/model/start', tradingVO)
 }
 
 export async function pauseModel(modelVO){
-    return await httpRequest.put('/pause', modelVO)
+    return await httpRequest.putParams('/model/pause', modelVO)
 }
 
 export async function forceCloseModel(tradingVO){
-    return await httpRequest.put('/force', tradingVO)
+    return await httpRequest.put('/model/force', tradingVO)
 }
 

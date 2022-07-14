@@ -68,6 +68,7 @@
 // import { validUsername } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
 import Vcode from "vue-puzzle-vcode"
+import { getUserInfo } from "@/api/user"
 export default {
   name: 'Login',
   components: { SocialSign, Vcode },
@@ -147,11 +148,12 @@ export default {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
-            .then(()=> {
-              console.log(this.redirect)
-              this.$router.push({ path: this.redirect || '/'})
+            .then(async ()=> {
+              this.$store.dispatch('user/getInfo').then(res => {
+                this.$router.push({ path: this.redirect || '/'})
               // this.$router.push({ path: '/', query: this.otherQuery })
-              this.loading = false
+              this.loading = false    
+              })         
             })
             .catch(() => {
               this.loading = false

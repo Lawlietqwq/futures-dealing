@@ -56,7 +56,7 @@ export const constantRoutes = [
           path: 'index',
           component: () => import('@/views/model/index'),
           name: 'modelView',
-          meta: { title: '策略列表', icon: 'lock', noCache: true }
+          meta: { title: '策略实例', icon: 'lock', noCache: true }
         }
       ]
     },
@@ -67,8 +67,8 @@ export const constantRoutes = [
         {
           path: 'index',
           component: () => import('@/views/createView/index'),
-          name: 'modelView',
-          meta: { title: '创建策略', icon: 'lock', noCache: true }
+          name: 'createView',
+          meta: { title: '创建实例', icon: 'lock', noCache: true }
         }
       ]
     },

@@ -53,7 +53,7 @@ service.interceptors.response.use(
     // 状态码不是200，报错
     if (res.code !== 200) {
       Message({
-        message: res.message || '操作错误',
+        message: res.msg || '操作错误',
         type: 'error',
         duration: 5 * 1000
       })
@@ -115,9 +115,18 @@ const httpRequest = {
       }
     })
   },
+
+  putParams(url, params) {
+    return service.put(url,  {
+      params,
+      paramsSerializer : (params) => {
+        return qs.stringify(params)
+      },
+    })
+  },
+
   //get请求
   get(url, params) {
-    console.log(url)
     return service.get(url, {
       params,
       paramsSerializer: (params) => {

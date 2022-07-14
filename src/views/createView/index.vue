@@ -34,6 +34,41 @@
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="开盘价" prop="open" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.open }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="收盘价" prop="close" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.close }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="最低价" prop="low" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.low }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="最高价" prop="high" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.high }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="持仓" prop="vol" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.vol }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="成交量" prop="amount" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.amount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="交易日期" prop="tradeDate" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.tradeDate }}</span>
+        </template>
+      </el-table-column>
     </el-table>
 
 
@@ -44,29 +79,32 @@
           <el-form ref="createForm" :model="tmpData"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
             <!-- 选择买入策略 -->
             <el-form-item label="开仓策略">
-              <el-select v-model="tmpData.strategy_sname1" placeholder="请选择开仓策略">
-                <el-option v-for="(value,name) in strategyNameList" :key="name+'buy'" :label="value" :value="name" @change="showTable(val)"></el-option>
+              <el-select v-model="openStrategy" placeholder="请选择开仓策略">
+                <el-option v-for="strategy in openStrategyList" :key="strategy.oepnId" :label="strategy.openName" :value="strategy" @change="showTable(val)"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改买入策略参数 -->
-            <el-form-item v-for="(value, name) in tmpData.params1" :key="name+'buy'" :label="value.remark">
-              <el-input placeholder="请填写参数值" v-model="value.value" @input="change()"></el-input>  
+            <el-form-item v-for="param in openStrategy.openParams" :key="param.paramName+'buy'" :label="param.paramName">
+              <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
             </el-form-item>
             <el-divider></el-divider>
             <!-- 选择卖出策略 -->
             <el-form-item label="平仓策略">
-              <el-select v-model="tmpData.strategy_sname2" placeholder="请选择平仓策略">
-                <el-option v-for="(value,name) in strategyNameList" :key="name+'sell'" :label="value" :value="name" @change="showTable(val)"></el-option>
+              <el-select v-model="closeStrategy" placeholder="请选择平仓策略">
+                <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId" :label="strategy.closeName" :value="strategy" @change="showTable(val)"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改卖出策略参数参数 -->
-            <el-form-item v-for="(value, name) in tmpData.params2" :key="name+'sell'" :label="value.remark">
-              <el-input placeholder="请填写参数值" v-model="value.value" @input="change()"></el-input>  
+            <el-form-item v-for="param in closeStrategy.closeParams" :key="param.paramName+'sell'" :label="param.paramName">
+              <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
+            </el-form-item>
+            <el-form-item label="买卖手数">
+              <el-input placeholder="请设置手数" v-model="tmpData.lot"  @input="change()"></el-input>
             </el-form-item>
             <!-- 买or卖 -->
             <el-form-item label="合约买卖">
-              <el-radio v-model="upOrDown" label="0">买开卖平</el-radio>
-              <el-radio v-model="upOrDown" label="1">卖开买平</el-radio>
+              <el-radio v-model="tmpData.bkOrSk" :label="0">买开卖平</el-radio>
+              <el-radio v-model="tmpData.bkOrSk" :label="1">卖开买平</el-radio>
             </el-form-item>
           </el-form>
           <el-table
@@ -105,7 +143,6 @@ import Pagination from '@/components/Pagination'
 import * as contractApi from '@/api/contract'
 import * as modelApi from '@/api/model'
 import * as strategyApi from '@/api/strategy'
-// import * as strategyApi from '@/api/strategy-api'
 import { copyObj } from '@/utils/util'
 
 export default {
@@ -120,11 +157,25 @@ export default {
       dialogFormVisible: false,
       modelVisible: false,
       multipleSelection: null,
-      strategyNameList: [],
-      contractList: [],
+      openStrategyList: [],
+      closeStrategyList: [],
+      openStrategy:{
+        openId:null,
+        openName:null,
+        openClass:null,
+        openParams:[],
+      },
+
+      closeStrategy:{
+        closeId:null,
+        closeName:null,
+        closeClass:null,
+        closeParams:[]
+      },
       modelList: [],
       list:[],
       timeStamp: 1,
+      contractList: [],
       listQuery: {
         page: 1,
         limit: 20,
@@ -134,16 +185,11 @@ export default {
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       upOrDown: null,
       tmpData: {
-        uid: this.$store.getters.uid,
+        modelId: null,
         code: '',
-        open_or_close1: 'open',
-        up_or_down1: '',
-        strategy_sname1: '',
-        params1: null,
-        open_or_close2: 'close',
-        up_or_down2: '',
-        strategy_sname2: '',
-        params2: null,
+        uid: this.$store.getters.uid,
+        lot: 1, 
+        bkOrSk: 0,
       },
       // rules: {
       //   type: [{ required: true, message: 'type is required', trigger: 'change' }],
@@ -152,64 +198,80 @@ export default {
       // },
     }
   },
-  watch:{
-    upOrDown:{
-      deep:true,
-      handler(val){
-        if(val == 0){
-          this.tmpData.up_or_down1 = 'up'
-          this.tmpData.up_or_down2 = 'down'
-          }
-        else if(val == 1){
-          this.tmpData.up_or_down1 = 'down'
-          this.tmpData.up_or_down2 = 'up'
-        }   
-      }
-    },
-    'tmpData.strategy_sname1':{
-      deep:true,
-      handler(val){
-        if(val != ''){
-          strategyApi.getStrategyParam(val).then(res => {
-            this.tmpData.params1 = res.data
-            this.$refs['createForm'].$forceUpdate()
-          })   
-        }
-      }
-    },
-    'tmpData.strategy_sname2':{
-      deep:true,
-      handler(val){
-        if(val != ''){
-          strategyApi.getStrategyParam(val).then(res => {
-            this.tmpData.params2 = res.data
-            this.$refs['createForm'].$forceUpdate()
-          })   
-        }  
-      }
+  computed:{
+    tmpData:{
+      
     }
   },
+  // watch:{
+  //   upOrDown:{
+  //     deep:true,
+  //     handler(val){
+  //       if(val == 0){
+  //         this.tmpData.up_or_down1 = 'up'
+  //         this.tmpData.up_or_down2 = 'down'
+  //         }
+  //       else if(val == 1){
+  //         this.tmpData.up_or_down1 = 'down'
+  //         this.tmpData.up_or_down2 = 'up'
+  //       }   
+  //     }
+  //   },
+  //   'tmpData.strategy_sname1':{
+  //     deep:true,
+  //     handler(val){
+  //       if(val != ''){
+  //         strategyApi.getStrategyParam(val).then(res => {
+  //           this.tmpData.params1 = res.data
+  //           this.$refs['createForm'].$forceUpdate()
+  //         })   
+  //       }
+  //     }
+  //   },
+  //   'tmpData.strategy_sname2':{
+  //     deep:true,
+  //     handler(val){
+  //       if(val != ''){
+  //         strategyApi.getStrategyParam(val).then(res => {
+  //           this.tmpData.params2 = res.data
+  //           this.$refs['createForm'].$forceUpdate()
+  //         })   
+  //       }  
+  //     }
+  //   }
+  // },
 
   created() {
     this.getStrategyList()
     this.getContractList()
+
   },
   methods: {
     getStrategyList() {
       this.listLoading = true
-      strategyApi.getAllStrategy().then(res => {
-        if(res.data) this.strategyList = res.data
-        this.listLoading = false
+      strategyApi.getAllOpenStrategy().then(res => {
+        if(res.data) this.openStrategyList = res.data
       })
+      .then(strategyApi.getAllCloseStrategy().then(res =>{
+        this.closeStrategyList = res.data
+      })).then(() =>{
+          this.total = this.contractList.length
+          this.tableKey++
+          this.listLoading = false
+      })
+
     },
     getContractList(){
-      this.listLoading = true
       contractApi.getAllContractCode().then(res => {
-        this.contractList = res.data
+        for(var item of res.data){
+          this.contractList.push({code: item})
+        }
         this.total = this.contractList.length
-        this.getList()
+        this.getList()      
+        this.tableKey++
         this.listLoading = false
       })
+
     },
     handleFilter() {
       if(this.listQuery.code != ''){
@@ -239,7 +301,6 @@ export default {
     },
 
     handleCreate() {
-      var that = this
       if(this.multipleSelection == null){
         this.$notify({
             title: '警告',
@@ -257,40 +318,53 @@ export default {
     updateData() {
       this.$refs['createForm'].validate((valid) => {
         if (valid) {
+          this.tmpData = {
+            ...this.tmpData,
+            ...this.openStrategy,
+            ...this.closeStrategy
+          }
           for(var code of this.multipleSelection){
             this.tmpData.code = code.code 
-            this.tmpData.params1 = JSON.stringify(this.tmpData.params1)
-            this.tmpData.params2 = JSON.stringify(this.tmpData.params2)
-            strategyApi.createModel(this.tmpData).then(res => {      
+            // this.tmpData.params1 = JSON.stringify(this.tmpData.params1)
+            // this.tmpData.params2 = JSON.stringify(this.tmpData.params2)
+            modelApi.createModel(this.tmpData).then(res => {    
+              this.dialogFormVisible = false
+              this.tableKey += 1
+              this.multipleSelection = null
+              this.resetForm()
+              this.$notify({
+                title: '提示',
+                message: '创建成功',
+                type: 'success',
+                duration: 1000
+                })  
             })
-          }
-          this.dialogFormVisible = false
-          this.tableKey += 1
-          this.$notify({
-            title: '提示',
-            message: '创建成功',
-            type: 'success',
-            duration: 1000
-            })
+          }  
         }
-        this.multipleSelection = null
-        this.resetForm()
       })
     },
 
 
     resetForm(){
-      this.tmpData =  {
-        uid: this.$store.getters.uid,
+      this.openStrategy = {
+        openId:null,
+        openName:null,
+        openClass:null,
+        openParams:[],
+      },
+
+      this.closeStrategy = {
+        closeId:null,
+        closeName:null,
+        closeClass:null,
+        closeParams:[]
+      },
+      this.tmpData = {
+        modelId: null,
         code: '',
-        open_or_close1: 'open',
-        up_or_down1: '',
-        strategy_sname1: '',
-        params1: null,
-        open_or_close2: 'close',
-        up_or_down2: '',
-        strategy_sname2: '',
-        params2: null,
+        uid: this.$store.getters.uid,
+        lot: 1, 
+        bkOrSk: 0,
       }
     },
 
@@ -327,11 +401,12 @@ export default {
       isLast = Math.ceil(this.total / this.listQuery.limit) === this.listQuery.page
       start = (this.listQuery.page - 1) * this.listQuery.limit
       end = isFirst || isLast ? start + (this.total % this.listQuery.limit) : start + this.listQuery.limit
-      list = copyObj(this.contractList).slice(start, end)
+      list = copyObj(this.contractList.slice(start, end))
       list.forEach((item, index) => {
         item.seq = index + start
       })
       this.list = list
+      console.log(list)
       this.tableKey++
       return list
     }
