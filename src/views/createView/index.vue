@@ -242,30 +242,49 @@ export default {
   // },
 
   created() {
-    this.getStrategyList()
-    this.getContractList()
-
+    this.initData()
   },
   methods: {
-    getStrategyList() {
-      this.listLoading = true
-      strategyApi.getAllOpenStrategy().then(res => {
-        if(res.data) this.openStrategyList = res.data
-      })
-      .then(strategyApi.getAllCloseStrategy().then(res =>{
-        this.closeStrategyList = res.data
-      })).then(() =>{
-          this.total = this.contractList.length
-          this.tableKey++
-          this.listLoading = false
-      })
-
+    initData(){
+      try{
+        this.listLoading = true
+        let res = await Promise.all(
+          [
+            strategyApi.getAllOpenStrategy,
+            strategyApi.getAllCloseStrategy,
+            contractApi.getAllContractCode
+            ]
+        )
+        let [openData, closeData, contractData] = res.map(res => res.data)
+        this.openStrategyList = openData
+        this.closeStrategyList = closeData
+        this.contractList = contractData.reduce((pre, cur) => { pre.push({ code:cur }) }, [])
+        this.total = this.contractList.length
+        this.getList()
+        this.tableKey++
+        this.listLoading = false
+      } catch(error) {
+        console.log(error)
+      }
     },
+
+    // getStrategyList() {
+    //   this.listLoading = true
+    //   strategyApi.getAllOpenStrategy().then(res => {
+    //     if(res.data) this.openStrategyList = res.data
+    //   })
+    //   .then(strategyApi.getAllCloseStrategy().then(res =>{
+    //     this.closeStrategyList = res.data
+    //   })).then(() =>{
+    //       this.total = this.contractList.length
+    //       this.tableKey++
+    //       this.listLoading = false
+    //   })
+
+    // },
     getContractList(){
       contractApi.getAllContractCode().then(res => {
-        for(var item of res.data){
-          this.contractList.push({code: item})
-        }
+        this.contractList = res.data.reduce((pre, cur) => { pre.push({ code:cur }) }, [])
         this.total = this.contractList.length
         this.getList()      
         this.tableKey++
