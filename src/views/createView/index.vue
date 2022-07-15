@@ -237,11 +237,11 @@ export default {
   // },
 
   created() {
-    if (this.$store.getters.uid === null){
-      this.$store.dispatch('user/getInfo').then(res => {
-        this.tmpData.uid = this.$store.getters.uid
-    })
-  }
+  //   if (this.$store.getters.uid === null){
+  //     this.$store.dispatch('user/getInfo').then(res => {
+  //       this.tmpData.uid = this.$store.getters.uid
+  //   })
+  // }
     this.initData()
   },
   methods: {
@@ -287,7 +287,10 @@ export default {
     // },
     getContractList(){
       contractApi.getAllContractCode().then(res => {
-        this.contractList = res.data.reduce((pre, cur) => { pre.push({ code:cur }) }, [])
+        this.contractList = res.data.reduce((pre, cur) => { 
+            pre.push({ code:cur })
+            return pre
+          }, [])
         this.total = this.contractList.length
         this.getList()      
         this.tableKey++

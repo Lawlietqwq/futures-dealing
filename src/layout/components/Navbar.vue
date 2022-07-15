@@ -55,7 +55,7 @@ import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import { logout } from '@/api/user'
-import { getToken, removeToken, clearStorage } from '@/utils/auth'
+import { getToken, removeToken, clearLocalStorage } from '@/utils/auth'
 
 export default {
   components: {
@@ -88,9 +88,8 @@ export default {
         let res = await logout();
         console.log(res)
         if(res.code == 200){
-          console.log('??','sdsd')
           removeToken();
-          clearStorage();
+          clearLocalStorage();
           window.location.href='/login'
         }
       });   

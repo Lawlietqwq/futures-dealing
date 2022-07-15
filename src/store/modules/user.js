@@ -1,14 +1,14 @@
 import * as userApi from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import * as authApi from '@/utils/auth'
 import router, { resetRouter } from '@/router/index'
 
 const state = {
-  token: getToken(),
-  username: '',
-  uid: null,
-  email: '',
-  account: '',
-  tradingAccount: '',
+  token: authApi.getToken(),
+  username: authApi.getUsername(),
+  uid: authApi.getUid(),
+  email: authApi.getEmail(),
+  account: authApi.getAccount(),
+  tradingAccount: authApi.getTradingAccount(),
 }
 
 const mutations = {
@@ -46,7 +46,7 @@ const actions = {
         // commit('SET_USERNAME', data.username)//state更新
         // commit('SET_TRADINGACCOUNT', data.tradingAccount)//state更新
         // commit('SET_ACCOUNT', data.account)//state更新
-        setToken(res.token)//cookie更新
+        authApi.setToken(res.token)//cookie更新
         resolve()
       }).catch(error => {
         reject(error)
@@ -73,16 +73,18 @@ const actions = {
     return new Promise((resolve, reject) => {
       userApi.getUserInfo().then(res => {
         const user = res.data
-
         if (!user) {
           reject('认证失败，请重新登录')
         }
-
-        const { uid, username, account, tradingAccount } = user
-
-
+        const { uid, username, email, account, tradingAccount } = user
+        authApi.setUid(uid)
+        authApi.setUsername(username)
+        authApi.setEmail(email)
+        authApi.setAccount(account)
+        authApi.setTradingAccount(tradingAccount)
         commit('SET_UID', parseInt(uid))
         commit('SET_NAME', username)
+        commit('SET_EMAIL', email)
         commit('SET_ACCOUNT', account)
         commit('SET_TRADINGACCOUNT', tradingAccount)
         resolve()
@@ -98,7 +100,7 @@ const actions = {
       userApi.logout().then(() => {
         commit('SET_TOKEN', '')
         commit('SET_UID', -1)
-        removeToken()
+        authApi.removeToken()
         resetRouter()
         dispatch('tagsView/delAllViews', null, { root: true })
         resolve() 
@@ -116,7 +118,7 @@ const actions = {
       commit('SET_TOKEN', '')
       commit('SET_ROLE', -1)
       commit('SET_UID', -1)
-      removeToken()
+      authApi.removeToken()
       resolve()
     })
   },
