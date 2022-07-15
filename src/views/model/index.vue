@@ -182,8 +182,10 @@ export default {
       modelApi.forceCloseModel(this.tradingVO).then(() => {
         row.modelState = 'closed'
         this.tableKey++
-      }).catch(err =>
+      }).catch(err =>{
         row.modelState = tmpState
+        this.tableKey++
+      }
       )
     },
 
