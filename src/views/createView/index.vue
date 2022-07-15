@@ -79,8 +79,8 @@
           <el-form ref="createForm" :model="tmpData"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
             <!-- 选择买入策略 -->
             <el-form-item label="开仓策略">
-              <el-select v-model="openStrategy" placeholder="请选择开仓策略">
-                <el-option v-for="strategy in openStrategyList" :key="strategy.oepnId" :label="strategy.openName" :value="strategy" @change="showTable(val)"></el-option>
+              <el-select v-model="openStrategy" value-key="openName" placeholder="请选择开仓策略">
+                <el-option v-for="strategy in openStrategyList" :key="strategy.oepnId+strategy.openName" :label="strategy.openName" :value="strategy" ></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改买入策略参数 -->
@@ -90,8 +90,8 @@
             <el-divider></el-divider>
             <!-- 选择卖出策略 -->
             <el-form-item label="平仓策略">
-              <el-select v-model="closeStrategy" placeholder="请选择平仓策略">
-                <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId" :label="strategy.closeName" :value="strategy" @change="showTable(val)"></el-option>
+              <el-select v-model="closeStrategy" value-key="closeName" placeholder="请选择平仓策略">
+                <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId+strategy.closeName" :label="strategy.closeName" :value="strategy"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改卖出策略参数参数 -->
@@ -198,11 +198,6 @@ export default {
       // },
     }
   },
-  computed:{
-    tmpData:{
-      
-    }
-  },
   // watch:{
   //   upOrDown:{
   //     deep:true,
@@ -242,30 +237,38 @@ export default {
   // },
 
   created() {
+    if (this.$store.getters.uid === null){
+      this.$store.dispatch('user/getInfo').then(res => {
+        this.tmpData.uid = this.$store.getters.uid
+    })
+  }
     this.initData()
   },
   methods: {
     initData(){
-      try{
         this.listLoading = true
-        let res = await Promise.all(
+        Promise.all(
           [
-            strategyApi.getAllOpenStrategy,
-            strategyApi.getAllCloseStrategy,
-            contractApi.getAllContractCode
+            strategyApi.getAllOpenStrategy(),
+            strategyApi.getAllCloseStrategy(),
+            contractApi.getAllContractCode()
             ]
-        )
+        ).then(res =>{
         let [openData, closeData, contractData] = res.map(res => res.data)
         this.openStrategyList = openData
         this.closeStrategyList = closeData
-        this.contractList = contractData.reduce((pre, cur) => { pre.push({ code:cur }) }, [])
+        this.contractList = contractData.reduce((pre, cur) => 
+          { 
+            pre.push({ "code":cur }) 
+            return pre
+          }, [])
         this.total = this.contractList.length
         this.getList()
         this.tableKey++
         this.listLoading = false
-      } catch(error) {
-        console.log(error)
-      }
+        }).catch(err =>
+        console.log(err)
+        )
     },
 
     // getStrategyList() {
@@ -342,12 +345,17 @@ export default {
             ...this.openStrategy,
             ...this.closeStrategy
           }
+          let modelVOList = []
           for(var code of this.multipleSelection){
-            this.tmpData.code = code.code 
+            this.tmpData.code = code.code
+            let tmp = {...this.tmpData}
+            modelVOList.push(tmp)
             // this.tmpData.params1 = JSON.stringify(this.tmpData.params1)
             // this.tmpData.params2 = JSON.stringify(this.tmpData.params2)
-            modelApi.createModel(this.tmpData).then(res => {    
-              this.dialogFormVisible = false
+          }
+            console.log(modelVOList,'tmpdata')
+            modelApi.createBatchModel(modelVOList).then(res => {                
+             this.dialogFormVisible = false
               this.tableKey += 1
               this.multipleSelection = null
               this.resetForm()
@@ -356,12 +364,12 @@ export default {
                 message: '创建成功',
                 type: 'success',
                 duration: 1000
-                })  
+              }) 
             })
-          }  
-        }
-      })
-    },
+             
+          }
+        })
+      },
 
 
     resetForm(){
@@ -394,6 +402,8 @@ export default {
     },
 
     handleSelectionChange(val) {
+      console.log(val,'val')
+      console.log(this.multipleSelection,'this')
         this.multipleSelection = val;
     },
     
@@ -425,7 +435,6 @@ export default {
         item.seq = index + start
       })
       this.list = list
-      console.log(list)
       this.tableKey++
       return list
     }

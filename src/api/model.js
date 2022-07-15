@@ -19,6 +19,10 @@ export async function createModel(data){
     return await httpRequest.post('/model', data)
 }
 
+export async function createBatchModel(data){
+    return await httpRequest.post('/model/batch', data)
+}
+
 
 export async function updateModel(data){
     return await httpRequest.put(`/model`, data)

@@ -69,7 +69,7 @@
           <el-button type="success" class="opsButton" @click="modelStart(row)">启动</el-button>
           <el-button type="info" class="opsButton" @click="modelStop(row)">暂停</el-button>
           <el-button type="warning" class="opsButton" @click="modelClose(row)">平仓</el-button>
-          <el-button type="danger" class="opsButton" @click="modelDel(row)">删除</el-button>
+          <el-button type="danger" class="opsButton" @click="modelDel(row, index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -134,20 +134,22 @@ export default {
   // },
 
   created() {
+    if (this.$store.getters.uid === null){
+      this.$store.dispatch('user/getInfo').then(res => {
+        this.tradingVO.account = this.$store.getters.account
+        this.tradingVO.tradingAccount = this.$store.getters.tradingAccount
+      }
+    )
+  }
     this.getModelList()
-    
+
   },
   methods: {
     getModelList() {
       this.listLoading = true
       modelApi.getAllModel().then(res => {
         if(res.data){
-          console.log(this.modelList)
           this.modelList = res.data
-          // for (var model of this.modelList){
-          //   model.params1 = eval("("+model.params1+")")
-          //   model.params2 = eval("("+model.params2+")")
-          // }
           this.total = this.modelList.length
           this.getList()
         }
@@ -156,12 +158,14 @@ export default {
     },
 
     modelStart(row){
+      console.log(this.tradingVO.modelId,'modelId')
       this.tradingVO.modelId = row.modelId
       modelApi.startModel(this.tradingVO).then(() => {
         row.modelState = 'started'
         this.tableKey++
       })     
     },
+
     modelStop(row){
       modelApi.pauseModel({modelId:row.modelId, modelState:row.modelState}).then(() =>
        {
@@ -169,6 +173,7 @@ export default {
         this.tableKey++
       })     
     },
+
     modelClose(row){
       this.tradingVO.modelId = row.modelId
       var tmpState = row.modelState
@@ -181,13 +186,31 @@ export default {
         row.modelState = tmpState
       )
     },
-    modelDel(row){
-      modelApi.deleteModel(row.modelId).then(() => {
-        this.tableKey++
-      })     
+
+    modelDel(row) {
+      console.log(row,'123')
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          modelApi.deleteModel(row.modelId).then(res =>{
+            this.$notify({
+              title: '模型删除',
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            this.modelList.splice(row.seq, 1)
+            this.getList()
+            this.tableKey++
+        })
+      }).catch(() => {         
+        });
     },
+
     handleFilter() {
-      if(this.listQuery.code != ''){
+      if(this.listQuery.code.trim() != ''){
         this.querySearch()
         this.listQuery.page = 1
         this.total = this.modelList.length
@@ -212,28 +235,6 @@ export default {
       }
       this.handleFilter()
     },
-
-    handleDelete(row, index) {
-      var that = this
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          modelApi.deleteModel(row.modelId).then(res =>{
-            this.$notify({
-              title: '模型删除',
-              message: '删除成功',
-              type: 'success',
-              duration: 1000
-           })
-          that.modelList.splice(index, 1)
-        })
-      }).catch(() => {         
-        });
-    },
-
-
     
     querySearch() {
       var searchData = []
@@ -259,8 +260,6 @@ export default {
     //前端分页
     getList() {
       let list, start, end, isFirst, isLast
-      console.log(this.listQuery)
-      console.log(this.listQuery.limit)
       isFirst = this.total < this.listQuery.limit
       isLast = Math.ceil(this.total / this.listQuery.limit) === this.listQuery.page
       start = (this.listQuery.page - 1) * this.listQuery.limit

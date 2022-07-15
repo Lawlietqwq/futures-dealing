@@ -117,13 +117,26 @@ const httpRequest = {
   },
 
   putParams(url, params) {
-    return service.put(url,  {
+    return service.put(url, params, {
       params,
-      paramsSerializer : (params) => {
+      paramsSerializer: (params) => {
         return qs.stringify(params)
-      },
+      },  
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     })
   },
+ 
+
+  // putParams(url, params) {
+  //   return service.put(url,  {
+  //     params,
+  //     paramsSerializer : (params) => {
+  //       return qs.stringify(params)
+  //     },
+  //   })
+  // },
 
   //get请求
   get(url, params) {
