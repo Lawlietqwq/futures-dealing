@@ -83,7 +83,7 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import { getAllContractCode } from '@/api/contract'
-// import * as strategyApi from '@/api/strategy-api'
+import * as taskApi from '@/utils/timer'
 import * as authApi from '@/utils/auth'
 import * as modelApi from '@/api/model'
 import { copyObj } from '@/utils/util'
@@ -124,26 +124,12 @@ export default {
       // },
     }
   },
-  // watch:{
-  //   modelId:{
-  //     deep:true,
-  //     handler(){
-  //       this.dialogFormVisible = true
-  //     }
-  //   }
-  // },
 
   created() {
-  //   if (this.$store.getters.uid === null){
-  //     this.$store.dispatch('user/getInfo').then(res => {
-  //       this.tradingVO.account = this.$store.getters.account
-  //       this.tradingVO.tradingAccount = this.$store.getters.tradingAccount
-  //     }
-  //   )
-  // }
     this.getModelList()
-
+    taskApi.continuedTarget(this.getModelList)
   },
+
   methods: {
     getModelList() {
       this.listLoading = true
@@ -207,8 +193,7 @@ export default {
             this.getList()
             this.tableKey++
         })
-      }).catch(() => {         
-        });
+      })
     },
 
     handleFilter() {
@@ -273,7 +258,11 @@ export default {
       this.list = list
       this.tableKey++
       return list
-    }
+    },
+
+    stopTask(target){
+      taskApi.stopIntervalTask(target)
+    },
   }
 }
 </script>
