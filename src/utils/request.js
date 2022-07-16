@@ -17,9 +17,10 @@ const service = axios.create({
   service.interceptors.request.use(
     config => {
       // do something before request is sent
-      if (store.getters.token) {
+      let token = getToken() 
+      if (getToken()) {
 
-          config.headers['token'] = store.getters.token
+          config.headers['token'] = getToken()
       }
       // config.headers['Access-Control-Allow-Origin'] = "*"
       // config.headers['Access-Control-Allow-Methods'] = "*"

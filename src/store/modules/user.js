@@ -115,10 +115,13 @@ const actions = {
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      commit('SET_TOKEN', '')
-      commit('SET_ROLE', -1)
-      commit('SET_UID', -1)
-      authApi.removeToken()
+      commit('SET_TOKEN', null)
+      commit('SET_UID', null)
+      commit('SET_NAME', null)
+      commit('SET_EMAIL', null)
+      commit('SET_ACCOUNT', null)
+      commit('SET_TRADINGACCOUNT', null)
+      authApi.clearLocalStorage()
       resolve()
     })
   },
