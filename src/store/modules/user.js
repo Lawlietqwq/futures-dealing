@@ -4,32 +4,41 @@ import router, { resetRouter } from '@/router/index'
 
 const state = {
   token: authApi.getToken(),
-  username: authApi.getUsername(),
-  uid: authApi.getUid(),
-  email: authApi.getEmail(),
-  account: authApi.getAccount(),
-  tradingAccount: authApi.getTradingAccount(),
+  uid: parseInt(authApi.getUserInfo().uid),
+  userInfo: authApi.getUserInfo()
 }
 
 const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_EMAIL: (state, email) => {
-    state.email = email
-  },
-  SET_USERNAME: (state, username) => {
-    state.username = username
-  },
-  SET_ACCOUNT: (state, account) => {
-    state.account = account
-  },
-  SET_TRADINGACCOUNT: (state, tradingAccount) => {
-    state.tradingAccount = tradingAccount
-  },
   SET_UID: (state, uid) => {
     state.uid = uid
-  }
+  },
+  SET_USERINFO: (state, userInfo) => {
+    state.userInfo = userInfo
+  },
+  // SET_USERNAME: (state, username) => {
+  //   state.username = username
+  // },
+  // SET_XINYIACCOUNT: (state, xinyiAccount) => {
+  //   state.xinyiAccount = xinyiAccount
+  // },
+  // SET_XINYIPWD: (state, xinyiPwd) => {
+  //   state.xinyiPwd = xinyiPwd
+  // },
+  // SET_TRADINGACCOUNT: (state, tradingAccount) => {
+  //   state.tradingAccount = tradingAccount
+  // },
+  // SET_TRADINGPWD: (state, tradingPwd) => {
+  //   state.tradingPwd = tradingPwd
+  // },
+  // SET_COMPONY: (state, compony) => {
+  //   state.compony = compony
+  // },
+  // SET_UID: (state, uid) => {
+  //   state.uid = uid
+  // }
 }
 
 const actions = {
@@ -72,21 +81,24 @@ const actions = {
   getInfo({ commit }) {
     return new Promise((resolve, reject) => {
       userApi.getUserInfo().then(res => {
-        const user = res.data
-        if (!user) {
+        var userInfo = res.data
+        userInfo.uid = parseInt(userInfo.uid)
+        if (!userInfo) {
           reject('认证失败，请重新登录')
         }
-        const { uid, username, email, account, tradingAccount } = user
-        authApi.setUid(uid)
-        authApi.setUsername(username)
-        authApi.setEmail(email)
-        authApi.setAccount(account)
-        authApi.setTradingAccount(tradingAccount)
-        commit('SET_UID', parseInt(uid))
-        commit('SET_NAME', username)
-        commit('SET_EMAIL', email)
-        commit('SET_ACCOUNT', account)
-        commit('SET_TRADINGACCOUNT', tradingAccount)
+        // const { uid, username, email, xinyiAccount, xinyiPwd, tradingAccount, tradingPwd, compony } = userInfo
+        // authApi.setUid(uid)
+        // authApi.setUsername(username)
+        // authApi.setEmail(email)
+        // authApi.setAccount(account)
+        // authApi.setTradingAccount(tradingAccount)
+        commit('SET_UID', userInfo.uid)
+        // commit('SET_NAME', username)
+        // commit('SET_EMAIL', email)
+        // commit('SET_ACCOUNT', account)
+        // commit('SET_TRADINGACCOUNT', tradingAccount)
+        authApi.setUserInfo(userInfo)
+        commit('SET_USERINFO', userInfo)
         resolve()
       }).catch(error => {
         reject(error)
@@ -116,11 +128,12 @@ const actions = {
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', null)
+      commit('SET_USERINFO', null)
       commit('SET_UID', null)
-      commit('SET_NAME', null)
-      commit('SET_EMAIL', null)
-      commit('SET_ACCOUNT', null)
-      commit('SET_TRADINGACCOUNT', null)
+      // commit('SET_NAME', null)
+      // commit('SET_EMAIL', null)
+      // commit('SET_ACCOUNT', null)
+      // commit('SET_TRADINGACCOUNT', null)
       authApi.clearLocalStorage()
       resolve()
     })

@@ -10,12 +10,15 @@
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
+      row-key="modelId"
+      :expand-row-keys="rowExpanded"
       ref="modelTable"
       border
       fit
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @expand-change="changeRowExpanded"
     >
       <el-table-column type="expand">
         <template slot-scope="props">
@@ -87,6 +90,7 @@ import * as taskApi from '@/utils/timer'
 import * as authApi from '@/utils/auth'
 import * as modelApi from '@/api/model'
 import { copyObj } from '@/utils/util'
+import Handler from 'zrender/lib/Handler'
 
 export default {
   name: 'ModelPage',
@@ -102,11 +106,15 @@ export default {
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
       tradingVO:{
         modelId: null,
-        account: this.$store.getters.account,
-        tradingAccount: this.$store.getters.tradingAccount,
+        xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
+        xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
+        tradingAccount: this.$store.getters.userInfo.tradingAccount,
+        tradingPwd: this.$store.getters.userInfo.tradingPwd,
+        compony: this.$store.getters.userInfo.compony,
       },
       modelList:[], 
       list: [],
+      rowExpanded:[],
       timeStamp: 1,
       listQuery: {
         page: 1,
@@ -125,9 +133,18 @@ export default {
     }
   },
 
+  // watch:{
+  //   modelList:{
+  //     deep:true,
+  //     handler(){
+  //       this.tableKey++
+  //     }
+  //   }
+  // },
+
   created() {
     this.getModelList()
-    taskApi.continuedTarget(this.getModelList)
+    taskApi.continuedTarget(this.continuedTask)
   },
 
   methods: {
@@ -141,6 +158,22 @@ export default {
         }
         this.listLoading = false
       })
+    },
+
+    continuedTask(){
+      modelApi.getAllModel().then(res => {
+        if(res.data){
+          this.modelList = res.data
+          this.total = this.modelList.length
+          this.getList()
+          }
+        })
+    },
+    changeRowExpanded(row, expandedRows){
+      console.log(row,'row')
+      console.log(expandedRows,'expandedRows')
+      // this.rowExpanded = expandedRows
+      // row? this.rowExpanded.push(row.modelId):''
     },
 
     modelStart(row){

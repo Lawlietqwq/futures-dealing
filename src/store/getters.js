@@ -12,8 +12,9 @@ const getters = {
     permission_routes: state => state.permission.routes,
     errorLogs: state => state.errorLog.logs,
     uid:state => state.user.uid,
-    account:state => state.user.account,
-    tradingAccount:state => state.user.tradingAccount,
+    userInfo:state => state.user.useInfo,
+    // account:state => state.user.account,
+    // tradingAccount:state => state.user.tradingAccount,
   }
   export default getters
   
