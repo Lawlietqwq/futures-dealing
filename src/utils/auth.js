@@ -25,11 +25,11 @@ export function removeToken() {
 }
 
 export function getUserInfo() {
-  return localStorage.getItem(userInfoKey)
+  return JSON.parse(localStorage.getItem(userInfoKey))
 }
 
 export function setUserInfo(userInfo) {
-  return localStorage.setItem(userInfoKey, userInfo)
+  return localStorage.setItem(userInfoKey, JSON.stringify(userInfo))
 }
 
 export function removeUserInfo() {
