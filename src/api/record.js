@@ -1,18 +1,18 @@
 import store from '@/store'
 import httpRequest from '@/utils/request'
 
-export async function getAllRecordByUid(isHolding){
+export async function getAllRecordByUid(){
     const uid = store.getters.uid;
-    return await httpRequest.get('/record/uid', {uid:uid, isHolding:isHolding})
+    return await httpRequest.get('/record/uid', {uid:uid})
 }
 
-export async function getAllRecordByModelId(modelId, isHolding){
-    return await httpRequest.get('/record/model', {modelId:modelId, isHolding:isHolding})
+export async function getAllRecordByModelId(modelId){
+    return await httpRequest.get('/record/model', {modelId:modelId})
 }
 
 
-export async function getAllRecordByCode(code, isHolding){
-    return await httpRequest.get('/record/code', {code:code, isHolding:isHolding})
+export async function getAllRecordByCode(code){
+    return await httpRequest.get('/record/code', {code:code})
 }
 
 

@@ -104,14 +104,15 @@ export default {
       dialogFormVisible: false,
       stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
-      tradingVO:{
-        modelId: null,
-        xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
-        xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
-        tradingAccount: this.$store.getters.userInfo.tradingAccount,
-        tradingPwd: this.$store.getters.userInfo.tradingPwd,
-        compony: this.$store.getters.userInfo.compony,
-      },
+      tradingVO:null,
+      // tradingVO:{
+      //   modelId: null,
+      //   xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
+      //   xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
+      //   tradingAccount: this.$store.getters.userInfo.tradingAccount,
+      //   tradingPwd: this.$store.getters.userInfo.tradingPwd,
+      //   compony: this.$store.getters.userInfo.compony,
+      // },
       modelList:[], 
       list: [],
       rowExpanded:[],
@@ -144,6 +145,7 @@ export default {
 
   created() {
     this.getModelList()
+    this.resetTradingVO()
     taskApi.continuedTarget(this.continuedTask)
   },
 
@@ -177,7 +179,6 @@ export default {
     },
 
     modelStart(row){
-      console.log(this.tradingVO.modelId,'modelId')
       this.tradingVO.modelId = row.modelId
       modelApi.startModel(this.tradingVO).then(() => {
         row.modelState = 'started'
@@ -295,6 +296,17 @@ export default {
     stopTask(target){
       taskApi.stopIntervalTask(target)
     },
+
+    resetTradingVO(){
+      this.tradingVO = {
+          modelId: null,
+          xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
+          xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
+          tradingAccount: this.$store.getters.userInfo.tradingAccount,
+          tradingPwd: this.$store.getters.userInfo.tradingPwd,
+          compony: this.$store.getters.userInfo.compony,
+        }
+    }
   }
 }
 </script>

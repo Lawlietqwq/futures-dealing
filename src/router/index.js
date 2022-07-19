@@ -20,7 +20,7 @@ export const constantRoutes = [
     },
     {
       path: '/login',
-      component: () => import('@/views/login/index'),
+      component: () => import('@/views/register/index'),
       hidden: true
     },
     
@@ -44,19 +44,20 @@ export const constantRoutes = [
           path: '',
           component: () => import('@/views/strategyView/index'),
           // name: 'strategyView',
-          meta: { title: '策略列表', icon: 'lock', noCache: true }
+          meta: { title: '策略列表', icon: 'component', noCache: true }
         }
       ]
     },
+
     {
-      path: '/list',
+      path: '/model',
       component: Layout,
       children: [
         {
           path: 'index',
           component: () => import('@/views/model/index'),
           // name: 'modelView',
-          meta: { title: '策略实例', icon: 'lock', noCache: true }
+          meta: { title: '策略实例', icon: 'list', noCache: true }
         }
       ]
     },
@@ -68,10 +69,35 @@ export const constantRoutes = [
           path: 'index',
           component: () => import('@/views/createView/index'),
           // name: 'createView',
-          meta: { title: '创建实例', icon: 'lock', noCache: true }
+          meta: { title: '创建实例', icon: 'edit', noCache: true }
         }
       ]
     },
+    {
+      path: '/position',
+      component: Layout,
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/position/index'),
+          // name: 'modelView',
+          meta: { title: '持仓列表', icon: 'chart', noCache: true }
+        }
+      ]
+    },
+    {
+      path: '/record',
+      component: Layout,
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/record/index'),
+          // name: 'modelView',
+          meta: { title: '交易记录', icon: 'lock', noCache: true }
+        }
+      ]
+    },
+
     { path: '*', redirect: '/404', hidden: true }
 
   ]

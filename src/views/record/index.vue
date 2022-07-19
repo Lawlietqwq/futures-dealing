@@ -10,7 +10,7 @@
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
-      ref="positionTable"
+      ref="recordTable"
       border
       fit
       highlight-current-row
@@ -20,9 +20,9 @@
 
       <el-table-column label="序号" type="index" align="center" width="80">
       </el-table-column>
-      <el-table-column v-if="false" label="持仓id" prop="holdingId" width="0px">
+      <el-table-column v-if="false" label="记录id" prop="recordId" width="0px">
         <template v-slot="{row}">
-          <span>{{ row.holdingId }}</span>
+          <span>{{ row.recordId }}</span>
         </template>
       </el-table-column>
       <el-table-column label="合约" prop="code" width="150px" align="center">
@@ -59,9 +59,9 @@
           <span>{{ row.bkOrSk==0?'做多':'做空' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓手数" prop="openNum" width="50px" align="center">
+      <el-table-column label="手数" prop="lot" width="50px" align="center">
         <template v-slot="{row}">
-          <span>{{ row.openNum }}</span>
+          <span>{{ row.lot }}</span>
         </template>
       </el-table-column>
       <el-table-column label="开仓价格" prop="openPrice" width="100px" align="center">
@@ -72,6 +72,26 @@
       <el-table-column label="开仓时间" prop="openTime" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.openTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="平仓价格" prop="closePrice" width="100px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.closePrice }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="平仓时间" prop="closeTime" width="150px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.closeTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="收益" prop="profit" width="100px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.profit }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center">
+        <template v-slot="{row}">
+          <el-button type="danger" class="opsButton" @click="recordDel(row, index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -85,13 +105,13 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import * as taskApi from '@/utils/timer'
-import * as positionApi from '@/utils/position'
+import * as recordApi from '@/utils/record'
 import * as authApi from '@/utils/auth'
 import { copyObj } from '@/utils/util'
 
 
 export default {
-  name: 'PositionPage',
+  name: 'RecordPage',
   directives: { waves },
   data(){
     return{
@@ -106,46 +126,64 @@ export default {
         sort: '+id'
       },
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      positionList: [],
+      recordList: [],
     }
   },
 
   created(){
-    this.getPositionList()
+    this.getRecordList()
     taskApi.continuedTarget(this.continuedTask)
   },
 
   methods:{
-    getPositionList(){
-      positionApi.getAllHoldingByUid().then(res => {
+    getRecordList(){
+      recordApi.getAllRecordByUid().then(res => {
         if(res.data){
-          this.positionList = res.data
-          this.total = this.positionList.length
+          this.recordList = res.data
+          this.total = this.recordList.length
           this.getList()
         }
       })
     },
 
     continuedTask(){
-      positionApi.getAllHoldingByUid().then(res => {
+      recordApi.getAllRecordByUid().then(res => {
         if(res.data){
-          this.positionList = res.data
-          this.total = this.positionList.length
+          this.recordList = res.data
+          this.total = this.recordList.length
           this.getList()
           }
         })
     },
 
+    async recordDel(row){
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            await recordApi.deleteByRecordId(row.recordId)
+            this.$notify({
+              title: '模型删除',
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            this.recordList.splice(row.seq, 1)
+            this.getList()
+            this.tableKey++
+        })
+    },
 
     handleFilter() {
       if(this.listQuery.code.trim() != ''){
         this.querySearch()
         this.listQuery.page = 1
-        this.total = this.positionList.length
+        this.total = this.recordList.length
         this.getList()
       }
       else{
-        this.getPositionList()
+        this.getRecordList()
       }
     },
 
@@ -167,12 +205,12 @@ export default {
     querySearch() {
       var searchData = []
       var vm = this
-      this.positionList.forEach(function (item) {
+      this.recordList.forEach(function (item) {
         if (item.code.toLowerCase().indexOf(vm.listQuery.code.toLowerCase()) > -1) {
           searchData.push(item);
         }
       });
-      this.positionList = searchData;
+      this.recordList = searchData;
     },
     
     //el-input bug 需要强制刷新
@@ -187,7 +225,7 @@ export default {
       isLast = Math.ceil(this.total / this.listQuery.limit) === this.listQuery.page
       start = (this.listQuery.page - 1) * this.listQuery.limit
       end = isFirst || isLast ? start + (this.total % this.listQuery.limit) : start + this.listQuery.limit
-      list = copyObj(this.positionList).slice(start, end)
+      list = copyObj(this.recordList).slice(start, end)
       list.forEach((item, index) => {
         item.seq = index + start
       })
