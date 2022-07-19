@@ -4,7 +4,8 @@ import router, { resetRouter } from '@/router/index'
 
 const state = {
   token: authApi.getToken(),
-  uid: parseInt(authApi.getUserInfo().uid),
+  // uid: parseInt(authApi.getUserInfo().uid),
+  uid: 0,
   userInfo: authApi.getUserInfo()
 }
 
@@ -82,6 +83,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       userApi.getUserInfo().then(res => {
         var userInfo = res.data
+        console.log(userInfo,'info')
+
         userInfo.uid = parseInt(userInfo.uid)
         if (!userInfo) {
           reject('认证失败，请重新登录')
