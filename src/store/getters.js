@@ -1,3 +1,5 @@
+import * as authApi from "@/utils/auth"
+
 const getters = {
     sidebar: state => state.app.sidebar,
     size: state => state.app.size,
@@ -11,8 +13,14 @@ const getters = {
     role: state => state.user.role,
     permission_routes: state => state.permission.routes,
     errorLogs: state => state.errorLog.logs,
-    uid:state => state.user.uid,
-    userInfo:state => state.user.userInfo,
+    uid:state => {
+      state.user.uid = authApi.getUserInfo().uid
+      return state.user.uid
+    },
+    userInfo:state => {
+      state.user.userInfo = authApi.getUserInfo()
+      return state.user.userInfo
+    },
   }
   export default getters
   

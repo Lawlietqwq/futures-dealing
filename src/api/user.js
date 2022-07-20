@@ -17,3 +17,7 @@ export async function getUserInfo(){
     return await httpRequest.get('/userInfo', null)
 }
 
+export async function getAllCompany(){
+    return await httpRequest.get('/company', null)
+}
+

@@ -10,7 +10,7 @@ const userInfoKey = 'Admin-UserInfo'
 // const xinyiPwdKey = 'Admin-XinyiPwd'
 // const tradingAccountKey = 'Admin-TradingAccount'
 // const tradingPwdKey = 'Admin-TradingPwd'
-// const componyKey = 'Admin-Compony'
+// const companyKey = 'Admin-Company'
 
 export function getToken() {
   return localStorage.getItem(tokenKey)

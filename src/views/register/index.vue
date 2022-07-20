@@ -5,17 +5,19 @@
         <!-- 注册 -->
         <form class="register-box hidden">
           <h1>注册</h1>
-          <el-select v-model="registerForm.compony" placeholder="请选择期货公司">
+          <el-select v-model="registerForm.company" placeholder="请选择期货公司">
             <el-option
-              v-for="compony in componyList"
-              :key="compony"
-              :label="compony"
-              :value="compony">
+              v-for="company in companyList"
+              :key="company"
+              :label="company"
+              :value="company"
+              align="center" 
+              >
             </el-option>
           </el-select>
           <input type="text" placeholder="用户名" id="username" v-model="registerForm.username">
-          <input type="text" placeholder="密码" id="password" v-model="registerForm.password">
-          <input type="text" placeholder="确认密码" id="checkPwd" v-model="checkPwd">
+          <input type="password" placeholder="密码" id="password" v-model="registerForm.password">
+          <input type="password" placeholder="确认密码" id="checkPwd" v-model="checkPwd">
           <input type="text" placeholder="邮箱" id="email" v-model="registerForm.email">
           <input type="text" placeholder="信易账号" id="xinyiAccount" v-model="registerForm.xinyiAccount">
           <input type="text" placeholder="信易密码" id="xinyiPwd" v-model="registerForm.xinyiPwd">      
@@ -26,7 +28,7 @@
         <form class="login-box">
           <h1 style="margin-bottom:3em">登录</h1>
           <input type="text" placeholder="用户名" style="margin-bottom:4em" id="loginUsername" v-model="loginForm.username"> 
-          <input type="text" placeholder="密码" style="margin-bottom:5em" id="loginPwd" v-model="loginForm.password">
+          <input type="password" placeholder="密码" style="margin-bottom:5em" id="loginPwd" v-model="loginForm.password">
           <button @click="login">登录</button> 
         </form>
       </div>
@@ -49,14 +51,13 @@
 </template>
 
 <script>
-  import {register} from "@/api/user"
+  import {register, getAllCompany} from "@/api/user"
 
   export default {
     name:'RegisterPage',
-    components:{},
     data(){
       return{
-        componyList: [],
+        companyList: [],
         loginForm:{      
           username:'',
           password:'',
@@ -70,15 +71,23 @@
           xinyiPwd:'',
           tradingAccount:'',
           tradingPwd:'',
-          compony:''
+          company:''
         }
       }
     },
     created(){
-
+      this.getCompanyList()
     },
     
     methods:{
+      getCompanyList(){
+        getAllCompany().then(res => {
+          if(res.data){
+            this.companyList = res.data
+          }
+        })
+      },
+
       toRegister(){
         document.getElementsByClassName("form-box")[0].style.transform = 'translateX(95%)'
         document.getElementsByClassName("login-box")[0].classList.add('hidden')
@@ -136,7 +145,7 @@
           xinyiPwd:'',
           tradingAccount:'',
           tradingPwd:'',
-          compony:''
+          company:''
         }
         this.checkPwd = ''
       }

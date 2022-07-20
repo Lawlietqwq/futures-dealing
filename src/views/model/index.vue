@@ -79,18 +79,36 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
+    <el-dialog title="手动平仓" :visible.sync="dialogFormVisible">
+        <div>
+          <h2 align="center" style="margin-bottom:50px">剩余仓位为:&nbsp;<span style="color: red;">{{lot}}手</span></h2>
+          <el-form ref="forceForm" :model="tradingVO"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+            <el-form-item label="平仓手数">
+              <el-input placeholder="请设置手数" v-model="tradingVO.lot"  @input="change()"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消 
+        </el-button>
+        <el-button type="primary" @click="forceClose">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
-import { getAllContractCode } from '@/api/contract'
+import { getOpenNumByModelId } from '@/api/position'
 import * as taskApi from '@/utils/timer'
 import * as authApi from '@/utils/auth'
 import * as modelApi from '@/api/model'
 import { copyObj } from '@/utils/util'
-import Handler from 'zrender/lib/Handler'
 
 export default {
   name: 'ModelPage',
@@ -100,18 +118,20 @@ export default {
     return {
       tableKey: 0,
       total: 0,
+      lot:null,
       listLoading: false,
       dialogFormVisible: false,
       stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
       tradingVO:null,
+      row:null,
       // tradingVO:{
       //   modelId: null,
       //   xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
       //   xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
       //   tradingAccount: this.$store.getters.userInfo.tradingAccount,
       //   tradingPwd: this.$store.getters.userInfo.tradingPwd,
-      //   compony: this.$store.getters.userInfo.compony,
+      //   company: this.$store.getters.userInfo.company,
       // },
       modelList:[], 
       list: [],
@@ -194,19 +214,62 @@ export default {
       })     
     },
 
-    modelClose(row){
+    async modelClose(row){
       this.tradingVO.modelId = row.modelId
-      var tmpState = row.modelState
-      row.modelState = 'closing'
+      this.row = row
+      // this.tmpState = row.modelState
+      // row.modelState = 'closing'
+      // this.tableKey++
+      this.lot = (await getOpenNumByModelId(row.modelId)).data
+      this.dialogFormVisible = true
+      // if(this.lot == 0) return
+      // this.tradingVO.lot = lot
+      // modelApi.forceCloseModel(this.tradingVO).then(() => {
+      //   row.modelState = 'closed'
+      //   this.tableKey++
+      // }).catch(err =>{
+      //   row.modelState = tmpState
+      //   this.tableKey++
+      // }
+      // )
+    },
+
+    forceClose(){
+      var tmpState = this.row.modelState
+      this.row.modelState = 'closing'
       this.tableKey++
-      modelApi.forceCloseModel(this.tradingVO).then(() => {
-        row.modelState = 'closed'
+      if(this.tradingLot == 0){
+        this.$notify({
+          title: '平仓失败',
+          message: '无持仓',
+          type: 'warning',
+          duration: 1000
+        })
+        this.row.modelState = tmpState
         this.tableKey++
-      }).catch(err =>{
-        row.modelState = tmpState
+        return
+      }else if(this.tradingLot > this.lot){
+        this.$notify({
+          title: '平仓失败',
+          message: '超过持仓手数',
+          type: 'error',
+          duration: 1000
+        })
+        this.row.modelState = tmpState
         this.tableKey++
+        return
+      }else{
+        modelApi.forceCloseModel(this.tradingVO).then(() => {
+          this.dialogFormVisible = false
+          this.row.modelState = 'closed'
+          this.tableKey++
+        }).catch(err =>{
+          this.dialogFormVisible = false
+          this.row.modelState = tmpState
+          this.tableKey++
+        }
+        )
       }
-      )
     },
 
     modelDel(row) {
@@ -300,11 +363,13 @@ export default {
     resetTradingVO(){
       this.tradingVO = {
           modelId: null,
+          uid:this.$store.getters.uid,
           xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
           xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
           tradingAccount: this.$store.getters.userInfo.tradingAccount,
           tradingPwd: this.$store.getters.userInfo.tradingPwd,
-          compony: this.$store.getters.userInfo.compony,
+          company: this.$store.getters.userInfo.company,
+          lot:null
         }
     }
   }

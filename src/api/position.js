@@ -10,8 +10,11 @@ export async function getAllHoldingByModelId(modelId){
     return await httpRequest.get('/position/model', {modelId:modelId})
 }
 
-
 export async function getAllHoldingByCode(code){
     return await httpRequest.get('/position/code', {code:code})
+}
+
+export async function getOpenNumByModelId(modelId){
+  return await httpRequest.get(`/position/${modelId}`,null)
 }
 

@@ -18,22 +18,22 @@
       @sort-change="sortChange"
     >
 
-      <el-table-column label="序号" type="index" align="center" width="80">
+      <el-table-column label="序号" type="index" align="center" width="100rem">
       </el-table-column>
       <el-table-column v-if="false" label="记录id" prop="recordId" width="0px">
         <template v-slot="{row}">
           <span>{{ row.recordId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="合约" prop="code" width="150px" align="center">
+      <el-table-column label="合约" prop="code" width="200rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="openName" label="开仓策略" width="150px" align="center">
+      <el-table-column prop="openName" label="开仓策略" width="300rem" align="center">
         <template v-slot="{row}">
-          <span>{{ row.openName }}</span>
           <el-tooltip placement="top">
+            <span>{{ row.openName }}</span>
               <div slot="content">
                 <div v-for="param in row.openParams" :key="param.paramId">
                     {{param.paramName + ':' + param.paramValue}}
@@ -42,11 +42,11 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="closeName" label="平仓策略" width="150px" align="center">
+      <el-table-column prop="closeName" label="平仓策略" width="300rem" align="center">
         <template v-slot="{row}">
           <el-tooltip placement="top">
-              <span>{{ row.closeName }}</span>
-              <div slot="content">
+            <span>{{ row.closeName }}</span>
+            <div slot="content">
                 <div v-for="param in row.closeParams" :key="param.paramId">
                     {{param.paramName + ':' + param.paramValue}}
                 </div>
@@ -54,37 +54,37 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="bkOrSk" label="买卖方向" width="50px" align="center"> 
+      <el-table-column prop="bkOrSk" label="买卖方向" width="100rem" align="center"> 
         <template v-slot="{row}">
           <span>{{ row.bkOrSk==0?'做多':'做空' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="手数" prop="lot" width="50px" align="center">
+      <el-table-column label="手数" prop="lot" width="100rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.lot }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓价格" prop="openPrice" width="100px" align="center">
+      <el-table-column label="开仓价格" prop="openPrice" width="200rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.openPrice }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓时间" prop="openTime" width="150px" align="center">
+      <el-table-column label="开仓时间" prop="openTime" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.openTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="平仓价格" prop="closePrice" width="100px" align="center">
+      <el-table-column label="平仓价格" prop="closePrice" width="200rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.closePrice }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="平仓时间" prop="closeTime" width="150px" align="center">
+      <el-table-column label="平仓时间" prop="closeTime" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.closeTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="收益" prop="profit" width="100px" align="center">
+      <el-table-column label="收益" prop="profit" width="150rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.profit }}</span>
         </template>
@@ -105,7 +105,7 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import * as taskApi from '@/utils/timer'
-import * as recordApi from '@/utils/record'
+import * as recordApi from '@/api/record'
 import * as authApi from '@/utils/auth'
 import { copyObj } from '@/utils/util'
 
@@ -132,7 +132,7 @@ export default {
 
   created(){
     this.getRecordList()
-    taskApi.continuedTarget(this.continuedTask)
+    // taskApi.continuedTarget(this.continuedTask)
   },
 
   methods:{
@@ -156,12 +156,12 @@ export default {
         })
     },
 
-    async recordDel(row){
+    recordDel(row){
       this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
-        }).then(() => {
+        }).then(async () => {
             await recordApi.deleteByRecordId(row.recordId)
             this.$notify({
               title: '模型删除',

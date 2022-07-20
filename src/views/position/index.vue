@@ -18,23 +18,23 @@
       @sort-change="sortChange"
     >
 
-      <el-table-column label="序号" type="index" align="center" width="80">
+      <el-table-column label="序号" type="index" align="center" width="100rem">
       </el-table-column>
       <el-table-column v-if="false" label="持仓id" prop="holdingId" width="0px">
         <template v-slot="{row}">
           <span>{{ row.holdingId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="合约" prop="code" width="150px" align="center">
+      <el-table-column label="合约" prop="code" width="200rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="openName" label="开仓策略" width="150px" align="center">
+      <el-table-column prop="openName" label="开仓策略" width="400rem" align="center">
         <template v-slot="{row}">
-          <span>{{ row.openName }}</span>
           <el-tooltip placement="top">
-              <div slot="content">
+            <span>{{ row.openName }}</span>
+            <div slot="content">
                 <div v-for="param in row.openParams" :key="param.paramId">
                     {{param.paramName + ':' + param.paramValue}}
                 </div>
@@ -42,34 +42,34 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="closeName" label="平仓策略" width="150px" align="center">
+      <el-table-column prop="closeName" label="平仓策略" width="400rem" align="center">
         <template v-slot="{row}">
           <el-tooltip placement="top">
-              <span>{{ row.closeName }}</span>
-              <div slot="content">
-                <div v-for="param in row.closeParams" :key="param.paramId">
-                    {{param.paramName + ':' + param.paramValue}}
-                </div>
+            <span>{{ row.closeName }}</span>
+            <div slot="content">
+              <div v-for="param in row.closeParams" :key="param.paramId">
+                  {{param.paramName + ':' + param.paramValue}}
               </div>
+            </div>
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="bkOrSk" label="买卖方向" width="50px" align="center"> 
+      <el-table-column prop="bkOrSk" label="买卖方向" width="150rem" align="center"> 
         <template v-slot="{row}">
           <span>{{ row.bkOrSk==0?'做多':'做空' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓手数" prop="openNum" width="50px" align="center">
+      <el-table-column label="开仓手数" prop="openNum" width="150rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.openNum }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓价格" prop="openPrice" width="100px" align="center">
+      <el-table-column label="开仓价格" prop="openPrice" width="300rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.openPrice }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓时间" prop="openTime" width="150px" align="center">
+      <el-table-column label="开仓时间" prop="openTime" align="center">
         <template v-slot="{row}">
           <span>{{ row.openTime }}</span>
         </template>
@@ -85,7 +85,7 @@
 import waves from '@/directive/waves' 
 import Pagination from '@/components/Pagination'
 import * as taskApi from '@/utils/timer'
-import * as positionApi from '@/utils/position'
+import * as positionApi from '@/api/position'
 import * as authApi from '@/utils/auth'
 import { copyObj } from '@/utils/util'
 
@@ -112,7 +112,7 @@ export default {
 
   created(){
     this.getPositionList()
-    taskApi.continuedTarget(this.continuedTask)
+    // taskApi.continuedTarget(this.continuedTask)
   },
 
   methods:{

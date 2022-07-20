@@ -4,7 +4,7 @@ import router, { resetRouter } from '@/router/index'
 
 const state = {
   token: authApi.getToken(),
-  uid: 0,
+  uid: authApi.getUserInfo()?authApi.getUserInfo().uid:0,
   userInfo: authApi.getUserInfo()
 }
 
