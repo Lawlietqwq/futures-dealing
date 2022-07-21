@@ -59,7 +59,7 @@
           <span>{{ row.createTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" prop="modelState" class-name="status-col" width="100">
+      <el-table-column label="状态" prop="modelState" class-name="status-col" width="100" :key="stateKey">
         <template slot-scope="{row}">
           <el-tag :type="stateMap[row.modelState]">
             {{ stateNameMap[row.modelState] }}
@@ -117,6 +117,7 @@ export default {
     return {
       tableKey: 0,
       total: 0,
+      stateKey:0,
       lot:null,
       myTarget:null,
       listLoading: false,
@@ -166,7 +167,7 @@ export default {
   created() {
     this.getModelList()
     this.resetTradingVO()
-    // this.resetTarget()
+    this.resetTarget()
   },
   beforeDestroy() {
     this.stopTask(this.myTarget)                 
@@ -181,6 +182,7 @@ export default {
           this.modelList = res.data
           this.total = this.modelList.length
           this.getList()
+          this.tableKey++
         }
         this.listLoading = false
       })
@@ -192,6 +194,7 @@ export default {
           this.modelList = res.data
           this.total = this.modelList.length
           this.getList()
+          this.stateKey++
           }
         })
     },
@@ -308,6 +311,7 @@ export default {
         this.listQuery.page = 1
         this.total = this.modelList.length
         this.getList()
+        this.tableKey++
       }
       else{
         this.getModelList()
@@ -362,7 +366,6 @@ export default {
         item.seq = index + start
       })
       this.list = list
-      this.tableKey++
       return list
     },
 
