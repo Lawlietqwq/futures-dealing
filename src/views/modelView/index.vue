@@ -17,6 +17,18 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
+    <el-table-column type="expand">
+        <template slot-scope="props">
+          <el-descriptions :column="1" :label-style="{'text-align':'center'}" border>
+            <el-descriptions-item v-for="param in props.row.openParams" :label="'开仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#E1F3D8'}">
+              {{param.paramValue}}
+            </el-descriptions-item>
+            <el-descriptions-item v-for="param in props.row.closeParams" :label="'平仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#FDE2E2'}">
+              {{param.paramValue}}
+            </el-descriptions-item>
+          </el-descriptions>
+        </template>
+      </el-table-column>
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-descriptions :column="1" :label-style="{'text-align':'center'}" border>

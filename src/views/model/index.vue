@@ -11,28 +11,13 @@
       v-loading="listLoading"
       :data="list"
       row-key="modelId"
-      :expand-row-keys="rowExpanded"
       ref="modelTable"
       border
       fit
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
-      @expand-change="changeRowExpanded"
-    >
-      <el-table-column type="expand">
-        <template slot-scope="props">
-          <el-descriptions :column="1" :label-style="{'text-align':'center'}" border>
-            <el-descriptions-item v-for="param in props.row.openParams" :label="'开仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#E1F3D8'}">
-              {{param.paramValue}}
-            </el-descriptions-item>
-            <el-descriptions-item v-for="param in props.row.closeParams" :label="'平仓策略——'+param.paramName" :key="param.paramId" :label-style="{'text-align':'center','background':'#FDE2E2'}">
-              {{param.paramValue}}
-            </el-descriptions-item>
-          </el-descriptions>
-        </template>
-      </el-table-column>
-
+    >      
       <el-table-column label="序号" type="index" align="center" width="80">
       </el-table-column>
       <el-table-column v-if="false" label="实例id" prop="modelId" width="0px">
@@ -45,14 +30,28 @@
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开仓策略" prop="openName" width="150px" align="center">
+      <el-table-column prop="openName" label="开仓策略" width="300rem" align="center">
         <template v-slot="{row}">
-          <span>{{ row.openName }}</span>
+          <el-tooltip placement="top">
+            <span>{{ row.openName }}</span>
+              <div slot="content">
+                <div v-for="param in row.openParams" :key="param.paramId">
+                    {{param.paramName + ':' + param.paramValue}}
+                </div>
+              </div>
+          </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="平仓策略" prop="closeName" width="150px" align="center">
+      <el-table-column prop="closeName" label="平仓策略" width="300rem" align="center">
         <template v-slot="{row}">
-          <span>{{ row.closeName }}</span>
+          <el-tooltip placement="top">
+            <span>{{ row.closeName }}</span>
+            <div slot="content">
+                <div v-for="param in row.closeParams" :key="param.paramId">
+                    {{param.paramName + ':' + param.paramValue}}
+                </div>
+              </div>
+          </el-tooltip>
         </template>
       </el-table-column>
       <el-table-column label="配置时间" prop="createTime" width="300px" align="center">
@@ -79,7 +78,7 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog title="手动平仓" :visible.sync="dialogFormVisible">
+    <el-dialog title="手动平仓" :visible.sync="dialogFormVisible" @closed="resetTarget">
         <div>
           <h2 align="center" style="margin-bottom:50px">剩余仓位为:&nbsp;<span style="color: red;">{{lot}}手</span></h2>
           <el-form ref="forceForm" :model="tradingVO"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -119,6 +118,7 @@ export default {
       tableKey: 0,
       total: 0,
       lot:null,
+      myTarget:null,
       listLoading: false,
       dialogFormVisible: false,
       stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
@@ -166,13 +166,17 @@ export default {
   created() {
     this.getModelList()
     this.resetTradingVO()
-    taskApi.continuedTarget(this.continuedTask)
+    // this.resetTarget()
+  },
+  beforeDestroy() {
+    this.stopTask(this.myTarget)                 
+    this.myTarget = null
   },
 
   methods: {
     getModelList() {
       this.listLoading = true
-      modelApi.getAllModel().then(res => {
+      modelApi.getAllModelByUid().then(res => {
         if(res.data){
           this.modelList = res.data
           this.total = this.modelList.length
@@ -183,7 +187,7 @@ export default {
     },
 
     continuedTask(){
-      modelApi.getAllModel().then(res => {
+      modelApi.getAllModelByUid().then(res => {
         if(res.data){
           this.modelList = res.data
           this.total = this.modelList.length
@@ -215,6 +219,8 @@ export default {
     },
 
     async modelClose(row){
+      console.log(row.modelId)
+      this.stopTask(this.myTarget)
       this.tradingVO.modelId = row.modelId
       this.row = row
       // this.tmpState = row.modelState
@@ -237,8 +243,9 @@ export default {
     forceClose(){
       var tmpState = this.row.modelState
       this.row.modelState = 'closing'
+      this.dialogFormVisible = false
       this.tableKey++
-      if(this.tradingLot == 0){
+      if(this.tradingLot == 0){        
         this.$notify({
           title: '平仓失败',
           message: '无持仓',
@@ -246,6 +253,7 @@ export default {
           duration: 1000
         })
         this.row.modelState = tmpState
+        this.resetTarget() 
         this.tableKey++
         return
       }else if(this.tradingLot > this.lot){
@@ -256,16 +264,18 @@ export default {
           duration: 1000
         })
         this.row.modelState = tmpState
+        this.resetTarget() 
         this.tableKey++
         return
       }else{
         modelApi.forceCloseModel(this.tradingVO).then(() => {
-          this.dialogFormVisible = false
           this.row.modelState = 'closed'
+          this.resetTarget() 
           this.tableKey++
         }).catch(err =>{
           this.dialogFormVisible = false
           this.row.modelState = tmpState
+          this.resetTarget() 
           this.tableKey++
         }
         )
@@ -354,6 +364,10 @@ export default {
       this.list = list
       this.tableKey++
       return list
+    },
+
+    resetTarget(){
+      this.myTarget = taskApi.continuedTarget(this.continuedTask)
     },
 
     stopTask(target){

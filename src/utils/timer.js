@@ -3,7 +3,7 @@
  * @param {} func 
  */
 export function transientTarget(func){
-  setTimeout(
+  return setTimeout(
     () => {
       func()
     },1000
@@ -15,7 +15,7 @@ export function transientTarget(func){
  * @param {} func 
  */
 export function continuedTarget(func){
-  setInterval(
+  return setInterval(
     () => {
       func()
     },5000
