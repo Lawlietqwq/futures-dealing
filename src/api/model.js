@@ -45,3 +45,8 @@ export async function forceCloseModel(tradingVO){
     return await httpRequest.put('/model/force', tradingVO)
 }
 
+export async function changeCloseModel(newCloseStrategyVO){
+    return await httpRequest.post('/model/change', newCloseStrategyVO)
+}
+
+

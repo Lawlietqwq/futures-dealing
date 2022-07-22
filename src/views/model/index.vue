@@ -59,7 +59,17 @@
           <span>{{ row.createTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" prop="modelState" class-name="status-col" width="100" :key="stateKey">
+      <el-table-column prop="bkOrSk" label="买卖方向" width="150rem" align="center"> 
+        <template v-slot="{row}">
+          <span>{{ row.bkOrSk==0?'做多':'做空' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="买卖手数" prop="lot" width="100px" align="center">
+        <template v-slot="{row}">
+          <span>{{ row.lot }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" prop="modelState" class-name="status-col" width="100px" :key="stateKey">
         <template slot-scope="{row}">
           <el-tag :type="stateMap[row.modelState]">
             {{ stateNameMap[row.modelState] }}
@@ -67,7 +77,8 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center">
-        <template v-slot="{row}" style="display: flex;justify-content: space-around;">
+        <template v-slot="{row}" class="operation">
+          <el-button type="success" class="opsButton" @click="modelChange(row)">更换平仓策略</el-button>
           <el-button type="success" class="opsButton" @click="modelStart(row)">启动</el-button>
           <el-button type="info" class="opsButton" @click="modelStop(row)">暂停</el-button>
           <el-button type="warning" class="opsButton" @click="modelClose(row)">平仓</el-button>
@@ -79,19 +90,47 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog title="手动平仓" :visible.sync="dialogFormVisible" @closed="resetTarget">
-        <div>
-          <h2 align="center" style="margin-bottom:50px">剩余仓位为:&nbsp;<span style="color: red;">{{lot}}手</span></h2>
-          <el-form ref="forceForm" :model="tradingVO"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-            <el-form-item label="平仓手数">
-              <el-input placeholder="请设置手数" v-model="tradingVO.lot"  @input="change()"></el-input>
-            </el-form-item>
-          </el-form>
-        </div>
+      <div>
+        <h2 align="center" style="margin-bottom:50px">剩余仓位为:&nbsp;<span style="color: red;">{{lot}}手</span></h2>
+        <el-form ref="forceForm" :model="tradingVO"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+          <el-form-item label="平仓手数">
+            <el-input placeholder="请设置手数" v-model="tradingVO.lot"  @input="change()"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消 
         </el-button>
         <el-button type="primary" @click="forceClose">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="更换卖出策略" :visible.sync="changeFormVisible" @closed="resetTarget">
+      <div>
+        <el-form ref="changeForm" :model="newCloseStrategyVO"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+          <el-form-item label="平仓手数">
+            <el-input placeholder="请设置手数" v-model="newCloseStrategyVO.lot"  @input="change()"></el-input>
+          </el-form-item>
+          <!-- 选择平仓策略 -->
+          <el-form-item label="平仓策略">
+            <el-select v-model="closeStrategy" value-key="closeName" placeholder="请选择平仓策略">
+              <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId+strategy.closeName" :label="strategy.closeName" :value="strategy" ></el-option>
+            </el-select>
+          </el-form-item>
+          <!-- 修改平仓策略参数 -->
+          <el-form-item v-for="param in closeStrategy.closeParams" :key="param.paramName+'buy'" :label="param.paramName">
+            <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
+          </el-form-item>
+        </el-form>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消 
+        </el-button>
+        <el-button type="primary" @click="changeComplete">
           确认
         </el-button>
       </div>
@@ -105,8 +144,8 @@ import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import { getOpenNumByModelId } from '@/api/position'
 import * as taskApi from '@/utils/timer'
-import * as authApi from '@/utils/auth'
 import * as modelApi from '@/api/model'
+import { getAllCloseStrategy } from '@/api/strategy'
 import { copyObj } from '@/utils/util'
 
 export default {
@@ -122,22 +161,23 @@ export default {
       myTarget:null,
       listLoading: false,
       dialogFormVisible: false,
+      changeFormVisible: false,
       stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
+      newCloseStrategyVO:null,
       tradingVO:null,
       row:null,
-      // tradingVO:{
-      //   modelId: null,
-      //   xinyiAccount: this.$store.getters.userInfo.xinyiAccount,
-      //   xinyiPwd: this.$store.getters.userInfo.xinyiPwd,
-      //   tradingAccount: this.$store.getters.userInfo.tradingAccount,
-      //   tradingPwd: this.$store.getters.userInfo.tradingPwd,
-      //   company: this.$store.getters.userInfo.company,
-      // },
+      closeStrategyList: [],
       modelList:[], 
       list: [],
       rowExpanded:[],
       timeStamp: 1,
+      closeStrategy:{
+        closeId:null,
+        closeName:null,
+        closeClass:null,
+        closeParams:[]
+      },
       listQuery: {
         page: 1,
         limit: 20,
@@ -155,18 +195,12 @@ export default {
     }
   },
 
-  // watch:{
-  //   modelList:{
-  //     deep:true,
-  //     handler(){
-  //       this.tableKey++
-  //     }
-  //   }
-  // },
 
   created() {
     this.getModelList()
+    this.getCloseStrategy()
     this.resetTradingVO()
+    this.resetNewCloseStrategyVO()
     this.resetTarget()
   },
   beforeDestroy() {
@@ -188,6 +222,14 @@ export default {
       })
     },
 
+    getCloseStrategy() {
+      modelApi.getAllCloseStrategy().then(res => {
+        if(res.data){
+          this.closeStrategyList = res.data
+        }
+      })
+    },
+
     continuedTask(){
       modelApi.getAllModelByUid().then(res => {
         if(res.data){
@@ -198,11 +240,24 @@ export default {
           }
         })
     },
-    changeRowExpanded(row, expandedRows){
-      console.log(row,'row')
-      console.log(expandedRows,'expandedRows')
-      // this.rowExpanded = expandedRows
-      // row? this.rowExpanded.push(row.modelId):''
+
+    modelChange(row){
+      this.newCloseStrategyVO.modelId = row.modelId
+      this.changeFormVisible = true
+    },
+
+    changeComplete(){
+      const closeName = this.newCloseStrategyVO.closeName
+      modelApi.changeCloseModel(this.newCloseStrategyVO).then(res => {
+        this.getModelList()
+        this.tableKey++
+        this.$notify({
+          title: '修改成功',
+          message: `平仓策略修改为${closeName}`,
+          type: 'success',
+          duration: 1000
+        })     
+      })
     },
 
     modelStart(row){
@@ -222,25 +277,13 @@ export default {
     },
 
     async modelClose(row){
-      console.log(row.modelId)
       this.stopTask(this.myTarget)
       this.tradingVO.modelId = row.modelId
       this.row = row
-      // this.tmpState = row.modelState
-      // row.modelState = 'closing'
-      // this.tableKey++
-      this.lot = (await getOpenNumByModelId(row.modelId)).data
-      this.dialogFormVisible = true
-      // if(this.lot == 0) return
-      // this.tradingVO.lot = lot
-      // modelApi.forceCloseModel(this.tradingVO).then(() => {
-      //   row.modelState = 'closed'
-      //   this.tableKey++
-      // }).catch(err =>{
-      //   row.modelState = tmpState
-      //   this.tableKey++
-      // }
-      // )
+      if(this.row.modelState == "holding"){
+        this.lot = (await getOpenNumByModelId(row.modelId)).data
+        this.dialogFormVisible = true
+      }
     },
 
     forceClose(){
@@ -248,7 +291,7 @@ export default {
       this.row.modelState = 'closing'
       this.dialogFormVisible = false
       this.tableKey++
-      if(this.tradingLot == 0){        
+      if(this.tradingVO.lot == 0){        
         this.$notify({
           title: '平仓失败',
           message: '无持仓',
@@ -259,7 +302,7 @@ export default {
         this.resetTarget() 
         this.tableKey++
         return
-      }else if(this.tradingLot > this.lot){
+      }else if(this.tradingVO.lot > this.lot){
         this.$notify({
           title: '平仓失败',
           message: '超过持仓手数',
@@ -272,7 +315,17 @@ export default {
         return
       }else{
         modelApi.forceCloseModel(this.tradingVO).then(() => {
-          this.row.modelState = 'closed'
+          this.$notify({
+          title: '平仓成功',
+          message: `平仓${this.tradingVO.lot}手`,
+          type: 'error',
+          duration: 1000
+        })
+        if(this.tradingVO.lot == this.lot){
+          this.row.modelState = 'closed'  
+        }else{
+          this.row.modelState = 'holding'
+        }
           this.resetTarget() 
           this.tableKey++
         }).catch(err =>{
@@ -388,6 +441,17 @@ export default {
           company: this.$store.getters.userInfo.company,
           lot:null
         }
+    },
+
+    resetNewCloseStrategyVO(){
+      this.newCloseStrategyVO = {
+        modelId: null,
+        closeId: null,
+        closeName: null,
+        closeClass: null,
+        closeParams: [],
+        lot: null
+      }
     }
   }
 }
@@ -397,5 +461,9 @@ export default {
 <style lang="scss" scoped>
   .opsButton{
     margin-left: 10px;
+  }
+  .operation::v-deep{
+     display: flex;
+     justify-content: space-around;
   }
 </style>

@@ -24,7 +24,7 @@ import strategyList from './components/StrategyList.vue'
 import strategyInfo from './components/StrategyInfo.vue'
 
 export default {
-  name: 'StrategyView',
+  name: 'StrategyPage',
 
   components:{
     strategyList,

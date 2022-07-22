@@ -77,24 +77,24 @@
       <el-dialog title="添加策略实例" :visible.sync="dialogFormVisible">
         <div>
           <el-form ref="createForm" :model="tmpData"  label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-            <!-- 选择买入策略 -->
+            <!-- 选择开仓策略 -->
             <el-form-item label="开仓策略">
               <el-select v-model="openStrategy" value-key="openName" placeholder="请选择开仓策略">
                 <el-option v-for="strategy in openStrategyList" :key="strategy.oepnId+strategy.openName" :label="strategy.openName" :value="strategy" ></el-option>
               </el-select>
             </el-form-item>
-            <!-- 修改买入策略参数 -->
+            <!-- 修改开仓策略参数 -->
             <el-form-item v-for="param in openStrategy.openParams" :key="param.paramName+'buy'" :label="param.paramName">
               <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
             </el-form-item>
             <el-divider></el-divider>
-            <!-- 选择卖出策略 -->
+            <!-- 选择平仓策略 -->
             <el-form-item label="平仓策略">
               <el-select v-model="closeStrategy" value-key="closeName" placeholder="请选择平仓策略">
                 <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId+strategy.closeName" :label="strategy.closeName" :value="strategy"></el-option>
               </el-select>
             </el-form-item>
-            <!-- 修改卖出策略参数参数 -->
+            <!-- 修改平仓策略参数参数 -->
             <el-form-item v-for="param in closeStrategy.closeParams" :key="param.paramName+'sell'" :label="param.paramName">
               <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
             </el-form-item>
@@ -107,23 +107,6 @@
               <el-radio v-model="tmpData.bkOrSk" :label="1">卖开买平</el-radio>
             </el-form-item>
           </el-form>
-          <el-table
-            :data="modelList"
-            style="margin-left: 20px;"
-            v-if="modelVisible">
-            <el-table-column
-              prop="code"
-              label="合约"
-            >
-            </el-table-column>
-            <el-table-column
-              v-for="param in modelList[0].paramList"
-              :key="param.paramValue"
-              prop="paramList.paramValue"
-              :label="param.paramName"
-            >
-            </el-table-column>
-          </el-table>
         </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -146,7 +129,7 @@ import * as strategyApi from '@/api/strategy'
 import { copyObj } from '@/utils/util'
 
 export default {
-  name: 'CreateView',
+  name: 'CreatePage',
   components: { Pagination },
   directives: { waves },
   data() {
@@ -382,13 +365,12 @@ export default {
         openClass:null,
         openParams:[],
       },
-
       this.closeStrategy = {
         closeId:null,
         closeName:null,
         closeClass:null,
         closeParams:[]
-      },
+      },  
       this.tmpData = {
         modelId: null,
         code: '',
@@ -398,15 +380,7 @@ export default {
       }
     },
 
-    showTable(val){
-
-      // this.modelVisible = true
-      
-    },
-
     handleSelectionChange(val) {
-      console.log(val,'val')
-      console.log(this.multipleSelection,'this')
         this.multipleSelection = val;
     },
     

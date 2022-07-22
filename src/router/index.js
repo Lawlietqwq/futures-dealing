@@ -43,21 +43,8 @@ export const constantRoutes = [
         {
           path: '',
           component: () => import('@/views/strategyView/index'),
-          // name: 'strategyView',
+          name: 'StrategyPage',
           meta: { title: '策略列表', icon: 'component', noCache: true }
-        }
-      ]
-    },
-
-    {
-      path: '/model',
-      component: Layout,
-      children: [
-        {
-          path: 'index',
-          component: () => import('@/views/model/index'),
-          // name: 'modelView',
-          meta: { title: '策略实例', icon: 'list', noCache: true }
         }
       ]
     },
@@ -68,11 +55,24 @@ export const constantRoutes = [
         {
           path: 'index',
           component: () => import('@/views/createView/index'),
-          // name: 'createView',
+          name: 'CreatePage',
           meta: { title: '创建实例', icon: 'edit', noCache: true }
         }
       ]
     },
+    {
+      path: '/model',
+      component: Layout,
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/model/index'),
+          name: 'ModelPage',
+          meta: { title: '策略实例', icon: 'list', noCache: true }
+        }
+      ]
+    },
+    
     {
       path: '/position',
       component: Layout,
@@ -80,7 +80,7 @@ export const constantRoutes = [
         {
           path: 'index',
           component: () => import('@/views/position/index'),
-          // name: 'modelView',
+          name: 'PositionPage',
           meta: { title: '持仓列表', icon: 'chart', noCache: true }
         }
       ]
@@ -92,7 +92,7 @@ export const constantRoutes = [
         {
           path: 'index',
           component: () => import('@/views/record/index'),
-          // name: 'modelView',
+          name: 'RecordPage',
           meta: { title: '交易记录', icon: 'lock', noCache: true }
         }
       ]
