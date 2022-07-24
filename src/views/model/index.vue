@@ -78,7 +78,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center">
         <template v-slot="{row}" class="operation">
-          <el-button type="success" class="opsButton" @click="modelChange(row)">更换平仓策略</el-button>
+          <el-button type="primary" class="opsButton" @click="modelChange(row)">更换平仓策略</el-button>
           <el-button type="success" class="opsButton" @click="modelStart(row)">启动</el-button>
           <el-button type="info" class="opsButton" @click="modelStop(row)">暂停</el-button>
           <el-button type="warning" class="opsButton" @click="modelClose(row)">平仓</el-button>
@@ -127,7 +127,7 @@
         </el-form>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
+        <el-button @click="changeFormVisible = false">
           取消 
         </el-button>
         <el-button type="primary" @click="changeComplete">
@@ -223,7 +223,7 @@ export default {
     },
 
     getCloseStrategy() {
-      modelApi.getAllCloseStrategy().then(res => {
+      getAllCloseStrategy().then(res => {
         if(res.data){
           this.closeStrategyList = res.data
         }
@@ -247,8 +247,13 @@ export default {
     },
 
     changeComplete(){
-      const closeName = this.newCloseStrategyVO.closeName
+      this.newCloseStrategyVO.closeId = this.closeStrategy.closeId
+      const closeName = this.closeStrategy.closeName
+      this.newCloseStrategyVO.closeName = closeName
+      this.newCloseStrategyVO.closeClass = this.closeStrategy.closeClass
+      this.newCloseStrategyVO.closeParams = this.closeStrategy.closeParams      
       modelApi.changeCloseModel(this.newCloseStrategyVO).then(res => {
+        this.changeFormVisible = false
         this.getModelList()
         this.tableKey++
         this.$notify({
@@ -282,6 +287,7 @@ export default {
       this.row = row
       if(this.row.modelState == "holding"){
         this.lot = (await getOpenNumByModelId(row.modelId)).data
+        this.tradingVO.lot = this.lot
         this.dialogFormVisible = true
       }
     },
