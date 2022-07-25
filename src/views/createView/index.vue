@@ -88,14 +88,18 @@
               <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
             </el-form-item>
             <el-divider></el-divider>
+            <el-form-item>
+              <el-radio v-model="closeDefault" :label="false">仅选择开仓策略</el-radio>
+              <el-radio v-model="closeDefault" :label="true">选择平仓策略</el-radio>
+            </el-form-item>
             <!-- 选择平仓策略 -->
-            <el-form-item label="平仓策略">
+            <el-form-item v-show="closeDefault" label="平仓策略">
               <el-select v-model="closeStrategy" value-key="closeName" placeholder="请选择平仓策略">
                 <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId+strategy.closeName" :label="strategy.closeName" :value="strategy"></el-option>
               </el-select>
             </el-form-item>
             <!-- 修改平仓策略参数参数 -->
-            <el-form-item v-for="param in closeStrategy.closeParams" :key="param.paramName+'sell'" :label="param.paramName">
+            <el-form-item v-show="closeDefault" v-for="param in closeStrategy.closeParams" :key="param.paramName+'sell'" :label="param.paramName">
               <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
             </el-form-item>
             <el-form-item label="买卖手数">
@@ -140,6 +144,7 @@ export default {
       dialogFormVisible: false,
       modelVisible: false,
       multipleSelection: null,
+      closeDefault: false,
       openStrategyList: [],
       closeStrategyList: [],
       openStrategy:{
@@ -326,10 +331,19 @@ export default {
     updateData() {
       this.$refs['createForm'].validate((valid) => {
         if (valid) {
-          this.tmpData = {
-            ...this.tmpData,
-            ...this.openStrategy,
-            ...this.closeStrategy
+          if (this.closeDefault){
+            this.tmpData = {
+              ...this.tmpData,
+              ...this.openStrategy,
+            }
+          }else{
+            this.tmpData = {
+              ...this.tmpData,
+              ...this.openStrategy,
+              ...this.closeStrategy,
+              closeClass:"CloseDefault",
+              closeName:"无",
+            }
           }
           let modelVOList = []
           for(var code of this.multipleSelection){

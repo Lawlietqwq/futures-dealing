@@ -282,6 +282,15 @@ export default {
     },
 
     async modelClose(row){
+      if(row.closeClass == "CloseDefault"){
+        this.$notify({
+          title: '无法平仓',
+          message: '请设置平仓策略',
+          type: 'error',
+          duration: 1000
+        })
+        return
+      }
       this.stopTask(this.myTarget)
       this.tradingVO.modelId = row.modelId
       this.row = row
@@ -468,8 +477,5 @@ export default {
   .opsButton{
     margin-left: 10px;
   }
-  .operation::v-deep{
-     display: flex;
-     justify-content: space-around;
-  }
+
 </style>
