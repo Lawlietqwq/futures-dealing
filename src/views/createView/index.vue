@@ -335,12 +335,12 @@ export default {
             this.tmpData = {
               ...this.tmpData,
               ...this.openStrategy,
+              ...this.closeStrategy,
             }
           }else{
             this.tmpData = {
               ...this.tmpData,
               ...this.openStrategy,
-              ...this.closeStrategy,
               closeClass:"CloseDefault",
               closeName:"无",
             }

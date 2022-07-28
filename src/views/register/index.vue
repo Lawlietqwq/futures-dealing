@@ -20,9 +20,9 @@
           <input type="password" placeholder="确认密码" id="checkPwd" v-model="checkPwd">
           <input type="text" placeholder="邮箱" id="email" v-model="registerForm.email">
           <input type="text" placeholder="信易账号" id="xinyiAccount" v-model="registerForm.xinyiAccount">
-          <input type="text" placeholder="信易密码" id="xinyiPwd" v-model="registerForm.xinyiPwd">      
+          <input type="password" placeholder="信易密码" id="xinyiPwd" v-model="registerForm.xinyiPwd">      
           <input type="text" placeholder="交易账号" id="tradingAccount" v-model="registerForm.tradingAccount">
-          <input type="text" placeholder="交易密码" id="tradingPwd" v-model="registerForm.tradingPwd">
+          <input type="password" placeholder="交易密码" id="tradingPwd" v-model="registerForm.tradingPwd">
           <button @click="register">注册</button>
         </form>
         <form class="login-box">
@@ -129,7 +129,7 @@ import Vcode from "vue-puzzle-vcode"
           this.$message({
             message: '密码不一致',
             type: 'error'})
-        }
+        }    
         register(this.registerForm).then(()=>{
           this.resetRegisterForm()
           this.$alert('注册成功','系统消息',{

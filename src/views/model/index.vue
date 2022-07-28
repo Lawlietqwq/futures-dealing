@@ -115,13 +115,17 @@
             <el-input placeholder="请设置手数" v-model="newCloseStrategyVO.lot"  @input="change()"></el-input>
           </el-form-item>
           <!-- 选择平仓策略 -->
-          <el-form-item label="平仓策略">
+          <el-form-item>
+              <el-radio v-model="closeDefault" :label="false">仅选择开仓策略</el-radio>
+              <el-radio v-model="closeDefault" :label="true">选择平仓策略</el-radio>
+          </el-form-item>
+          <el-form-item v-show="closeDefault" label="平仓策略">
             <el-select v-model="closeStrategy" value-key="closeName" placeholder="请选择平仓策略">
               <el-option v-for="strategy in closeStrategyList" :key="strategy.closeId+strategy.closeName" :label="strategy.closeName" :value="strategy" ></el-option>
             </el-select>
           </el-form-item>
           <!-- 修改平仓策略参数 -->
-          <el-form-item v-for="param in closeStrategy.closeParams" :key="param.paramName+'buy'" :label="param.paramName">
+          <el-form-item v-show="closeDefault" v-for="param in closeStrategy.closeParams" :key="param.paramName+'buy'" :label="param.paramName">
             <el-input placeholder="请填写参数值" v-model="param.paramValue" @input="change()"></el-input>  
           </el-form-item>
         </el-form>
@@ -163,6 +167,7 @@ export default {
       listLoading: false,
       dialogFormVisible: false,
       changeFormVisible: false,
+      closeDefault: false,
       stateMap:{started:"",created:"info",holding:"warning",closing:"danger",closed:"success"},
       stateNameMap:{started:"正在运行",created:"已暂停",holding:"已持仓",closing:"正在平仓",closed:"交易成功"},
       newCloseStrategyVO:null,
@@ -249,11 +254,17 @@ export default {
     },
 
     changeComplete(){
-      this.newCloseStrategyVO.closeId = this.closeStrategy.closeId
-      const closeName = this.closeStrategy.closeName
-      this.newCloseStrategyVO.closeName = closeName
-      this.newCloseStrategyVO.closeClass = this.closeStrategy.closeClass
-      this.newCloseStrategyVO.closeParams = this.closeStrategy.closeParams      
+      var closeName = '空'
+      if (this.closeDefault){
+        this.newCloseStrategyVO.closeId = this.closeStrategy.closeId
+        closeName = this.closeStrategy.closeName
+        this.newCloseStrategyVO.closeName = closeName
+        this.newCloseStrategyVO.closeClass = this.closeStrategy.closeClass
+        this.newCloseStrategyVO.closeParams = this.closeStrategy.closeParams
+      } else{
+        this.newCloseStrategyVO.closeName = '无'
+        this.newCloseStrategyVO.closeClass = 'CloseDefault'
+      }
       modelApi.changeCloseModel(this.newCloseStrategyVO).then(res => {
         this.changeFormVisible = false
         this.getModelList()
