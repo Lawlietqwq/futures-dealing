@@ -29,7 +29,8 @@
           <h1 style="margin-bottom:3em">登录</h1>
           <input type="text" placeholder="用户名" style="margin-bottom:4em" id="loginUsername" v-model="loginForm.username"> 
           <input type="password" placeholder="密码" style="margin-bottom:5em" id="loginPwd" v-model="loginForm.password">
-          <button @click="login">登录</button> 
+          <Vcode :show="isShow" @success="login" @close="close" />
+          <button @click="submit">登录</button> 
         </form>
       </div>
       <div class="con-box left">
@@ -52,12 +53,15 @@
 
 <script>
   import {register, getAllCompany} from "@/api/user"
+import Vcode from "vue-puzzle-vcode"
 
   export default {
     name:'RegisterPage',
+    components: { Vcode },
     data(){
       return{
         companyList: [],
+        isShow: false,
         loginForm:{      
           username:'',
           password:'',
@@ -98,7 +102,7 @@
         document.getElementsByClassName("register-box")[0].classList.add('hidden')
         document.getElementsByClassName("login-box")[0].classList.remove('hidden')
       },
-      async login(){
+      login(){
         if(this.loginForm.username == ""){
           this.$message({
             message: '用户名不能为空',
@@ -120,7 +124,7 @@
             type: 'error'})
           })   
       },
-      async register(){
+      register(){
         if(this.registerForm.password != this.checkPwd){
           this.$message({
             message: '密码不一致',
@@ -135,6 +139,13 @@
             }
           })     
         })
+      },
+      submit(){
+        this.isShow = true
+      },
+    
+      close(){
+        this.isShow = false
       },
       resetRegisterForm(){
         this.registerForm = {      

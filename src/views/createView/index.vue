@@ -27,44 +27,46 @@
       <el-table-column
         reserve-selection
         type="selection"
-        width="55">
+        width="55"
+        align="center"
+        >
       </el-table-column>
-      <el-table-column label="合约" prop="code" width="150px" align="center">
+      <el-table-column label="合约" prop="code" width="200rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="开盘价" prop="open" width="150px" align="center">
+      <el-table-column label="开盘价" prop="open" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.open }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="收盘价" prop="close" width="150px" align="center">
+      <el-table-column label="收盘价" prop="close" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.close }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="最低价" prop="low" width="150px" align="center">
+      <el-table-column label="最低价" prop="low" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.low }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="最高价" prop="high" width="150px" align="center">
+      <el-table-column label="最高价" prop="high" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.high }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="持仓" prop="vol" width="150px" align="center">
+      <el-table-column label="持仓" prop="vol" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.vol }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="成交量" prop="amount" width="150px" align="center">
+      <el-table-column label="成交量" prop="amount" width="250rem" align="center">
         <template v-slot="{row}">
           <span>{{ row.amount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="交易日期" prop="tradeDate" width="150px" align="center">
+      <el-table-column label="交易日期" prop="tradeDate" width="" align="center">
         <template v-slot="{row}">
           <span>{{ row.tradeDate }}</span>
         </template>
@@ -259,20 +261,17 @@ export default {
         )
     },
 
-    // getStrategyList() {
-    //   this.listLoading = true
-    //   strategyApi.getAllOpenStrategy().then(res => {
-    //     if(res.data) this.openStrategyList = res.data
-    //   })
-    //   .then(strategyApi.getAllCloseStrategy().then(res =>{
-    //     this.closeStrategyList = res.data
-    //   })).then(() =>{
-    //       this.total = this.contractList.length
-    //       this.tableKey++
-    //       this.listLoading = false
-    //   })
+    resetCodeList(){
+      contractApi.getAllContractCode().then(res => {
+        let contractData = res.data
+        this.contractList = contractData.reduce((pre, cur) => 
+          { 
+            pre.push({ "code":cur }) 
+            return pre
+          }, [])
+      })
+    },
 
-    // },
     getContractList(){
       contractApi.getAllContractCode().then(res => {
         this.contractList = res.data.reduce((pre, cur) => { 
@@ -288,6 +287,7 @@ export default {
     },
     handleFilter() {
       if(this.listQuery.code != ''){
+        this.resetCodeList()
         this.querySearch()
         this.listQuery.page = 1
         this.total = this.contractList.length
@@ -350,10 +350,7 @@ export default {
             this.tmpData.code = code.code
             let tmp = {...this.tmpData}
             modelVOList.push(tmp)
-            // this.tmpData.params1 = JSON.stringify(this.tmpData.params1)
-            // this.tmpData.params2 = JSON.stringify(this.tmpData.params2)
           }
-            console.log(modelVOList,'tmpdata')
             modelApi.createBatchModel(modelVOList).then(res => {                
              this.dialogFormVisible = false
               this.tableKey += 1
@@ -392,6 +389,7 @@ export default {
         lot: 1, 
         bkOrSk: 0,
       }
+      this.closeDefault = false
     },
 
     handleSelectionChange(val) {

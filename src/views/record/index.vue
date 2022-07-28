@@ -112,6 +112,7 @@ import { copyObj } from '@/utils/util'
 
 export default {
   name: 'RecordPage',
+  components: { Pagination },
   directives: { waves },
   data(){
     return{
@@ -132,7 +133,7 @@ export default {
 
   created(){
     this.getRecordList()
-    // taskApi.continuedTarget(this.continuedTask)
+    // taskApi.continuedTarget(this.continuedTask, 5000)
   },
 
   methods:{
@@ -177,6 +178,7 @@ export default {
 
     handleFilter() {
       if(this.listQuery.code.trim() != ''){
+        this.getRecordList()
         this.querySearch()
         this.listQuery.page = 1
         this.total = this.recordList.length

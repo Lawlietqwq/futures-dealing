@@ -6,7 +6,8 @@ import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://127.0.0.1:8888', 
+  // baseURL: 'http://127.0.0.1:8888', 
+  baseURL: 'https://csubigdata.com/fut_api/' , 
   // baseURL: process.env.VUE_APP_BASE_API, 
   // baseURL: 'https://csubigdata.com/fut_trading_api/' , 
 
@@ -25,12 +26,12 @@ const service = axios.create({
       // config.headers['Access-Control-Allow-Origin'] = "*"
       // config.headers['Access-Control-Allow-Methods'] = "*"
 
-      console.log(config,'config')
+      // console.log(config,'config')
       return config
     },
   error => {
     // do something with request error
-    console.log(error) // for debug
+    // console.log(error) // for debug
     return Promise.reject(error)
   }
 )
@@ -48,10 +49,11 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    console.log(response, 'response')
+    // console.log(response, 'response')
     // var response = JSON.parse(response)
     const res = response.data
     // 状态码不是200，报错
+    // console.log(res)
     if (res.code !== 200) {
       Message({
         message: res.msg || '操作错误',
@@ -78,12 +80,10 @@ service.interceptors.response.use(
       }
       return Promise.reject(new Error(res.message || '操作错误'))
     } else {
-      console.log(res)
       return res
     }
   },
   error => {
-    console.log('err' + error) // for debug
     Message({
       message: error.message,
       type: 'error',

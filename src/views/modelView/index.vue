@@ -238,7 +238,6 @@ export default {
             const index = this.modelList.findIndex(model => model.modelId === this.tmpData.modelId)
             this.modelList.splice(index, 1, this.tmpData)
             this.dialogFormVisible = false
-            console.log(this.tmpData,'this')
             this.tableKey += 1
             this.$notify({
               title: '模型更新',

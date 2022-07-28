@@ -159,6 +159,7 @@ export default {
       stateKey:0,
       lot:null,
       myTarget:null,
+      lotTarget:null,
       listLoading: false,
       dialogFormVisible: false,
       changeFormVisible: false,
@@ -205,7 +206,7 @@ export default {
   },
   beforeDestroy() {
     this.stopTask(this.myTarget)                 
-    this.myTarget = null
+    // this.myTarget = null
   },
 
   methods: {
@@ -242,6 +243,7 @@ export default {
     },
 
     modelChange(row){
+      this.stopTask(this.myTarget)
       this.newCloseStrategyVO.modelId = row.modelId
       this.changeFormVisible = true
     },
@@ -256,6 +258,7 @@ export default {
         this.changeFormVisible = false
         this.getModelList()
         this.tableKey++
+        this.resetTarget()
         this.$notify({
           title: '修改成功',
           message: `平仓策略修改为${closeName}`,
@@ -333,7 +336,7 @@ export default {
           this.$notify({
           title: '平仓成功',
           message: `平仓${this.tradingVO.lot}手`,
-          type: 'error',
+          type: 'success',
           duration: 1000
         })
         if(this.tradingVO.lot == this.lot){
@@ -375,6 +378,7 @@ export default {
 
     handleFilter() {
       if(this.listQuery.code.trim() != ''){
+        this.getModelList()
         this.querySearch()
         this.listQuery.page = 1
         this.total = this.modelList.length
@@ -438,11 +442,12 @@ export default {
     },
 
     resetTarget(){
-      this.myTarget = taskApi.continuedTarget(this.continuedTask)
+      this.myTarget = taskApi.continuedTarget(this.continuedTask, 1000)
     },
 
     stopTask(target){
       taskApi.stopIntervalTask(target)
+      target = null
     },
 
     resetTradingVO(){

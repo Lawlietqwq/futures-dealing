@@ -2,11 +2,11 @@
  * 一秒钟后执行一次定时任务
  * @param {} func 
  */
-export function transientTarget(func){
+export function transientTarget(func, timeout){
   return setTimeout(
     () => {
       func()
-    },1000
+    },timeout
   )
 }
 
@@ -14,11 +14,11 @@ export function transientTarget(func){
  * 每五秒执行定时任务
  * @param {} func 
  */
-export function continuedTarget(func){
+export function continuedTarget(func, timeout){
   return setInterval(
     () => {
       func()
-    },5000
+    },timeout
   )
 }
 

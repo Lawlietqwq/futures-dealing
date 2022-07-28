@@ -13,7 +13,7 @@ const name = defaultSettings.title // page title
 // For example, Mac: sudo npm run
 // You can change the port by the following method:
 // port = 8888 npm run dev OR npm run dev --port = 8888
-const port = process.env.port || process.env.npm_config_port || 8080
+const port = 8848
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
 module.exports = {
@@ -24,7 +24,7 @@ module.exports = {
    * In most cases please use '/' !!!
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
-  publicPath: '/',
+  publicPath: '/trading',
   outputDir: 'dist',
   assetsDir: 'static',
   lintOnSave: false,//process.env.NODE_ENV === 'development',
@@ -37,11 +37,11 @@ module.exports = {
       errors: true
     },
     proxy: {
-      '/': {
+      '/api': {
         target: process.env.VUE_APP_BASE_API,
         changeOrigin: true,  //配置跨域
         pathRewrite: {
-          '^/': ''
+          '^/api': ''
         }
       }
     }  

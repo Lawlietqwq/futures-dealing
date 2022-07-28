@@ -92,6 +92,7 @@ import { copyObj } from '@/utils/util'
 
 export default {
   name: 'PositionPage',
+  components: { Pagination },
   directives: { waves },
   data(){
     return{
@@ -112,7 +113,7 @@ export default {
 
   created(){
     this.getPositionList()
-    // taskApi.continuedTarget(this.continuedTask)
+    // taskApi.continuedTarget(this.continuedTask , 5000)
   },
 
   methods:{
@@ -165,6 +166,7 @@ export default {
     },
     
     querySearch() {
+      this.getPositionList()
       var searchData = []
       var vm = this
       this.positionList.forEach(function (item) {

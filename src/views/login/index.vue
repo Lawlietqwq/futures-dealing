@@ -70,7 +70,6 @@ import SocialSign from './components/SocialSignin'
 import Vcode from "vue-puzzle-vcode"
 import { getUserInfo } from "@/api/user"
 export default {
-  name: 'Login',
   components: { SocialSign, Vcode },
   data() {
 

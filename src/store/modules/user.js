@@ -24,10 +24,10 @@ const actions = {
   // user login
   login({ commit }, userInfo) {
     const { username, password } = userInfo
-    console.log(userInfo)
+    // console.log(userInfo)
     return new Promise((resolve, reject) => {
       userApi.login(userInfo).then(res => {
-        console.log(res)
+        // console.log(res)
         commit('SET_TOKEN', res.token)//state更新
         authApi.setToken(res.token)//localStorage更新
         resolve()
@@ -42,7 +42,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       userApi.getUserInfo().then(res => {
         var userInfo = res.data
-        console.log(userInfo,'info')
+        // console.log(userInfo,'info')
 
         userInfo.uid = parseInt(userInfo.uid)
         if (!userInfo) {

@@ -106,7 +106,6 @@ export default {
   },
   methods: {
     createModelFromTemplate(){
-      console.log(this.model,'obj')
       const model = this.model
       this.createLoading = true
       createModel(model).then(res=>{
